@@ -258,17 +258,29 @@ ul   { list-style: none; }
 .gt-pagination a:hover { background: var(--gt-off); }
 .gt-pagination .active { background: var(--gt-red); color: var(--gt-white); border-color: var(--gt-red); }
 
+.gt-sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 49; }
+.gt-sidebar-overlay.active { display: block; }
+
 @media (max-width: 1024px) {
   .gt-stats-row  { grid-template-columns: repeat(3,1fr); }
   .gt-stats-grid { grid-template-columns: repeat(2,1fr); }
   .gt-dash-grid  { grid-template-columns: 1fr; }
+  .gt-admin-main { padding: 1.5rem; }
 }
 @media (max-width: 768px) {
-  .gt-admin-sidebar { transform: translateX(-100%); transition: transform .25s; }
+  .gt-admin-sidebar { transform: translateX(-100%); transition: transform .3s; box-shadow: 4px 0 24px rgba(0,0,0,.3); }
   .gt-admin-sidebar.open { transform: translateX(0); }
   .gt-admin-content { margin-left: 0; }
-  .gt-admin-main    { margin-left: 0; }
+  .gt-admin-main    { margin-left: 0; padding: 1rem; }
   .gt-stats-row  { grid-template-columns: repeat(2,1fr); }
   .gt-stats-grid { grid-template-columns: repeat(2,1fr); }
   .gt-form-row   { grid-template-columns: 1fr; }
+  .gt-admin-card { overflow-x: auto; }
+  .gt-admin-topbar { padding: .75rem 1rem; }
+  .gt-admin-topbar h1 { font-size: 1.1rem; }
+}
+@media (max-width: 480px) {
+  .gt-stats-row  { grid-template-columns: 1fr 1fr; }
+  .gt-stats-grid { grid-template-columns: 1fr; }
+  .gt-admin-main { padding: .75rem; }
 }

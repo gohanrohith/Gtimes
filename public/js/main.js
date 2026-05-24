@@ -3,7 +3,25 @@ const navToggle = document.getElementById('navToggle');
 const navMenu   = document.getElementById('navMenu');
 if (navToggle && navMenu) {
   navToggle.addEventListener('click', () => navMenu.classList.toggle('open'));
+  // Close nav when a link inside is clicked
+  navMenu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth < 768) navMenu.classList.remove('open');
+    });
+  });
 }
+
+// Touch-friendly dropdowns (hover doesn't work on touch devices)
+document.querySelectorAll('.gt-has-dropdown').forEach(item => {
+  const link = item.querySelector('.gt-nav-link');
+  if (!link) return;
+  link.addEventListener('click', e => {
+    if (window.innerWidth < 768) {
+      e.preventDefault();
+      item.classList.toggle('open');
+    }
+  });
+});
 
 // Lightbox for gallery (album page)
 const lb     = document.getElementById('lightbox');
