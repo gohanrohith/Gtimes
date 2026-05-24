@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<div class="gt-page-hero">
+  <div class="container">
+    <h1>Videos</h1>
+    <p>Watch stories and highlights from Greenwood campuses</p>
+  </div>
+</div>
+<main class="section">
+  <div class="container">
+    <% if (videoCategories && videoCategories.length > 1) { %>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
+      <a href="/videos" class="btn btn-sm <%= !activeFilter ? 'btn-primary' : 'btn-outline' %>">All (<%= videos.length %>)</a>
+      <% videoCategories.forEach(vc => { %>
+      <a href="/videos?category=<%= vc.key %>" class="btn btn-sm <%= activeFilter===vc.key ? 'btn-primary' : 'btn-outline' %>"><%= vc.label %> (<%= vc.count %>)</a>
+      <% }) %>
+    </div>
+    <% } %>
+    <% if (videos && videos.length > 0) { %>
+    <div class="gt-videos-grid">
+      <% videos.forEach(v => { %>
+      <div class="gt-video-card">
+        <div class="gt-video-thumb" data-youtube="<%= v.youtube_id %>">
+          <% if (v.youtube_id) { %>
+          <img src="https://img.youtube.com/vi/<%= v.youtube_id %>/hqdefault.jpg" alt="<%= v.title %>" loading="lazy">
+          <% } else { %>
+          <div class="gt-video-placeholder"><i class="fas fa-film"></i></div>
+          <% } %>
+          <button class="gt-play-btn" aria-label="Play video"><i class="fas fa-play"></i></button>
+        </div>
+        <div class="gt-video-info">
+          <h3><%= v.title %></h3>
+          <% if (v.description) { %><p><%= v.description.substring(0,100) %><%= v.description.length>100?'…':'' %></p><% } %>
+          <span class="gt-video-date"><i class="fas fa-calendar-alt"></i> <%= new Date(v.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></span>
+        </div>
+        <% if (v.youtube_id) { %>
+        <div class="gt-video-embed" style="display:none">
+          <iframe src="https://www.youtube.com/embed/<%= v.youtube_id %>?autoplay=1" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+
+    <% if (pagination && pagination.totalPages > 1) { %>
+    <div class="gt-pagination">
+      <% if (pagination.page > 1) { %><a href="/videos?page=<%= pagination.page-1 %>">&laquo; Prev</a><% } %>
+      <% for (let i=1; i<=pagination.totalPages; i++) { %>
+      <% if (i===pagination.page) { %><span class="active"><%= i %></span><% } else { %><a href="/videos?page=<%= i %>"><%= i %></a><% } %>
+      <% } %>
+      <% if (pagination.page < pagination.totalPages) { %><a href="/videos?page=<%= pagination.page+1 %>">Next &raquo;</a><% } %>
+    </div>
+    <% } %>
+
+    <% } else { %>
+    <div class="gt-empty"><i class="fas fa-video"></i><p>No videos posted yet.</p></div>
+    <% } %>
+  </div>
+</main>
+<%- include('../partials/footer') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

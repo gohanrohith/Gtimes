@@ -1,0 +1,274 @@
+/* ── GTimes Admin CSS ────────────────────────────────── */
+:root {
+  --gt-navy:  #1F1B76;
+  --gt-green: #00663A;
+  --gt-lime:  #B5D236;
+  --gt-red:   #e63946;
+  --gt-dark:  #0d1117;
+  --gt-white: #ffffff;
+  --gt-off:   #f7f9fc;
+  --gt-gray:  #6c757d;
+  --gt-light: #e9ecef;
+  --gt-border:#dee2e6;
+  --gt-radius: 6px;
+  --gt-radius-lg: 10px;
+  --gt-shadow: 0 1px 8px rgba(0,0,0,.08);
+  --sidebar-w: 240px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 15px; background: var(--gt-off); color: #343a40; }
+a    { text-decoration: none; color: inherit; }
+ul   { list-style: none; }
+
+/* ── Layout ──────────────────────────────────────────── */
+.gt-admin-wrapper { display: flex; min-height: 100vh; }
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.gt-admin-sidebar {
+  width: var(--sidebar-w); background: var(--gt-dark); min-height: 100vh;
+  position: fixed; top: 0; left: 0; z-index: 50;
+  display: flex; flex-direction: column;
+}
+.gt-admin-brand {
+  padding: 1.25rem 1.5rem 1rem;
+  font-size: 1.4rem; font-weight: 800;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.gt-brand-g     { color: var(--gt-red); }
+.gt-brand-times { color: var(--gt-white); }
+
+.gt-admin-nav { padding: 1rem 0; flex: 1; }
+.gt-admin-link {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .65rem 1.5rem; color: #aaa; font-size: .88rem; font-weight: 500;
+  transition: background .15s, color .15s;
+}
+.gt-admin-link:hover, .gt-admin-link.active { background: rgba(255,255,255,.06); color: var(--gt-white); }
+.gt-admin-link i { width: 16px; text-align: center; font-size: .85rem; }
+.gt-admin-divider { height: 1px; background: rgba(255,255,255,.06); margin: .75rem 1.5rem; }
+.gt-admin-logout { color: #e57373 !important; }
+.gt-admin-logout:hover { background: rgba(230,57,70,.1) !important; }
+
+/* ── Content area ────────────────────────────────────── */
+.gt-admin-content {
+  margin-left: var(--sidebar-w); flex: 1;
+  display: flex; flex-direction: column; min-height: 100vh;
+}
+
+/* ── Topbar ──────────────────────────────────────────── */
+.gt-admin-topbar {
+  background: var(--gt-white); border-bottom: 1px solid var(--gt-border);
+  padding: 0 1.75rem; height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 40;
+}
+.gt-admin-topbar-left  { display: flex; align-items: center; gap: 1rem; }
+.gt-admin-page-title   { font-weight: 700; font-size: .95rem; }
+.gt-admin-topbar-right { display: flex; align-items: center; gap: 1.5rem; font-size: .85rem; }
+.gt-admin-topbar-link  { color: var(--gt-gray); transition: color .2s; }
+.gt-admin-topbar-link:hover { color: var(--gt-green); }
+.gt-admin-user { color: var(--gt-gray); display: flex; align-items: center; gap: .4rem; }
+.gt-sidebar-toggle { background: none; border: none; cursor: pointer; color: var(--gt-gray); font-size: 1rem; }
+
+/* ── Body ────────────────────────────────────────────── */
+.gt-admin-body { padding: 1.75rem; flex: 1; }
+
+.gt-admin-page-header { margin-bottom: 1.75rem; }
+.gt-admin-page-header h1 { font-size: 1.4rem; font-weight: 800; color: #1a1a1a; margin-bottom: .2rem; }
+.gt-admin-page-header p  { font-size: .88rem; color: var(--gt-gray); }
+
+/* ── Cards ───────────────────────────────────────────── */
+.gt-admin-card {
+  background: var(--gt-white); border-radius: var(--gt-radius-lg);
+  box-shadow: var(--gt-shadow); padding: 1.5rem; margin-bottom: 1.5rem;
+}
+.gt-admin-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; color: #1a1a1a; border-bottom: 1px solid var(--gt-light); padding-bottom: .75rem; }
+
+/* ── Stats row ───────────────────────────────────────── */
+.gt-stats-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.gt-stat-card {
+  background: var(--gt-white); border-radius: var(--gt-radius-lg);
+  box-shadow: var(--gt-shadow); padding: 1.25rem; display: flex; flex-direction: column; gap: .3rem;
+}
+.gt-stat-card .gt-stat-icon { font-size: 1.5rem; margin-bottom: .25rem; }
+.gt-stat-card .gt-stat-num  { font-size: 2rem; font-weight: 800; color: var(--gt-dark); line-height: 1; }
+.gt-stat-card .gt-stat-label{ font-size: .78rem; color: var(--gt-gray); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+
+/* ── Table ───────────────────────────────────────────── */
+.gt-admin-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.gt-admin-table th { text-align: left; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--gt-gray); padding: .65rem 1rem; border-bottom: 2px solid var(--gt-light); }
+.gt-admin-table td { padding: .75rem 1rem; border-bottom: 1px solid var(--gt-light); vertical-align: middle; }
+.gt-admin-table tr:last-child td { border-bottom: none; }
+.gt-admin-table tr:hover td { background: var(--gt-off); }
+
+/* ── Badges ──────────────────────────────────────────── */
+.gt-badge { display: inline-block; font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 3px; }
+.gt-badge-published { background: #d1fae5; color: #065f46; }
+.gt-badge-draft     { background: #fef3c7; color: #92400e; }
+.gt-badge-pending   { background: #fef3c7; color: #92400e; }
+.gt-badge-approved  { background: #d1fae5; color: #065f46; }
+.gt-badge-spam      { background: #fee2e2; color: #991b1b; }
+.gt-badge-info      { background: rgba(31,27,118,.08); color: var(--gt-navy); }
+
+/* ── Admin form ──────────────────────────────────────── */
+.gt-admin-form label { display: block; font-size: .84rem; font-weight: 600; margin-bottom: .4rem; color: #333; }
+.gt-admin-form input,
+.gt-admin-form textarea,
+.gt-admin-form select {
+  width: 100%; padding: .6rem .9rem; border: 1px solid var(--gt-border);
+  border-radius: var(--gt-radius); font-size: .9rem; font-family: inherit;
+  transition: border-color .2s; background: var(--gt-white);
+}
+.gt-admin-form input:focus,
+.gt-admin-form textarea:focus,
+.gt-admin-form select:focus { outline: none; border-color: var(--gt-green); }
+.gt-admin-form textarea { min-height: 300px; resize: vertical; }
+.gt-form-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+.gt-form-group { margin-bottom: 1.25rem; }
+.gt-form-hint  { font-size: .76rem; color: var(--gt-gray); margin-top: .25rem; }
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn { display: inline-flex; align-items: center; gap: .35rem; padding: .55rem 1.25rem; border-radius: var(--gt-radius); font-size: .85rem; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; transition: all .2s; }
+.btn-primary { background: var(--gt-green); color: var(--gt-white); }
+.btn-primary:hover { background: #004d2b; }
+.btn-red    { background: var(--gt-red); color: var(--gt-white); }
+.btn-red:hover { background: #c1121f; }
+.btn-outline { background: transparent; border-color: var(--gt-border); color: #555; }
+.btn-outline:hover { background: var(--gt-off); }
+.btn-sm     { padding: .35rem .75rem; font-size: .78rem; }
+.btn-danger { background: #fee2e2; color: #991b1b; border-color: transparent; }
+.btn-danger:hover { background: var(--gt-red); color: var(--gt-white); }
+.btn-warning { background: #fef3c7; color: #92400e; border-color: transparent; }
+.btn-warning:hover { background: #f59e0b; color: var(--gt-white); }
+
+/* ── Login page ──────────────────────────────────────── */
+.gt-admin-login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--gt-dark); }
+.gt-login-wrap  { background: var(--gt-white); border-radius: var(--gt-radius-lg); padding: 2.5rem; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.gt-login-brand { font-size: 1.8rem; font-weight: 900; margin-bottom: .35rem; }
+.gt-login-sub   { font-size: .85rem; color: var(--gt-gray); margin-bottom: 1.75rem; }
+.gt-login-form .gt-form-group input { font-size: .95rem; padding: .7rem 1rem; }
+
+/* ── Alert ───────────────────────────────────────────── */
+.gt-alert { padding: .75rem 1rem; border-radius: var(--gt-radius); margin-bottom: 1.25rem; font-size: .85rem; }
+.gt-alert-success { background: #d1fae5; color: #065f46; }
+.gt-alert-error   { background: #fee2e2; color: #991b1b; }
+
+/* ── Empty state ─────────────────────────────────────── */
+.gt-empty { text-align: center; padding: 3rem 2rem; color: var(--gt-gray); }
+.gt-empty i { font-size: 2.5rem; margin-bottom: .75rem; display: block; opacity: .4; }
+.gt-empty p { font-size: .9rem; }
+
+/* ── Thumbnail preview ───────────────────────────────── */
+.gt-thumb-preview { width: 64px; height: 50px; object-fit: cover; border-radius: 4px; }
+
+/* ── Dashboard recent grid ───────────────────────────── */
+.gt-dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+
+/* ── Admin layout (views use .gt-admin-layout + .gt-admin-main) ── */
+.gt-admin { background: var(--gt-off); }
+.gt-admin-layout { display: flex; min-height: calc(100vh - 58px); }
+.gt-admin-main   { margin-left: var(--sidebar-w); flex: 1; padding: 1.75rem; min-width: 0; }
+.gt-admin-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; }
+.gt-admin-page-header h1 { font-size: 1.4rem; font-weight: 800; color: #1a1a1a; }
+
+/* ── Stats grid ──────────────────────────────────────── */
+.gt-stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+.gt-stat-card  { background: var(--gt-white); border-radius: var(--gt-radius-lg); box-shadow: var(--gt-shadow); padding: 1.25rem; display: flex; align-items: center; gap: 1rem; }
+.gt-stat-icon  { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+.gt-stat-num   { font-size: 1.75rem; font-weight: 800; line-height: 1; }
+.gt-stat-label { font-size: .75rem; color: var(--gt-gray); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-top: .2rem; }
+
+/* ── Admin card header ───────────────────────────────── */
+.gt-admin-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.gt-admin-card-header h3 { font-size: .9rem; font-weight: 700; border: none; padding: 0; margin: 0; }
+
+/* ── Table full-width helper ─────────────────────────── */
+.gt-admin-table-full { width: 100%; }
+
+/* ── Badges (semantic) ───────────────────────────────── */
+.gt-badge-success { background: #d1fae5; color: #065f46; }
+.gt-badge-warn    { background: #fef3c7; color: #92400e; }
+.gt-badge-muted   { background: var(--gt-light); color: var(--gt-gray); }
+.gt-badge-danger  { background: #fee2e2; color: #991b1b; }
+.gt-badge-lime    { background: #ecfccb; color: #365314; }
+.gt-cat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+
+/* ── Button extras ───────────────────────────────────── */
+.btn-xs      { padding: .25rem .55rem; font-size: .72rem; }
+.btn-success { background: #d1fae5; color: #065f46; border-color: transparent; }
+.btn-success:hover { background: #10b981; color: var(--gt-white); }
+.btn-warn    { background: #fef3c7; color: #92400e; border-color: transparent; }
+.btn-warn:hover    { background: #f59e0b; color: var(--gt-white); }
+.btn-ghost   { background: transparent; border-color: transparent; color: var(--gt-gray); }
+.btn-ghost:hover   { color: var(--gt-dark); }
+
+/* ── Filter bar ──────────────────────────────────────── */
+.gt-filter-bar { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.gt-filter-bar select, .gt-filter-bar input[type=text] {
+  padding: .45rem .75rem; border: 1px solid var(--gt-border); border-radius: var(--gt-radius);
+  font-size: .85rem; font-family: inherit; background: var(--gt-white);
+}
+.gt-filter-bar input[type=text] { min-width: 220px; }
+
+/* ── Tab bar (comments) ──────────────────────────────── */
+.gt-tab-bar  { display: flex; gap: .25rem; border-bottom: 2px solid var(--gt-light); }
+.gt-tab      { padding: .55rem 1.1rem; font-size: .85rem; font-weight: 600; color: var(--gt-gray); border-radius: var(--gt-radius) var(--gt-radius) 0 0; transition: background .15s, color .15s; display: flex; align-items: center; gap: .4rem; }
+.gt-tab:hover { background: var(--gt-off); color: var(--gt-dark); }
+.gt-tab.active { background: var(--gt-white); color: var(--gt-dark); border: 2px solid var(--gt-light); border-bottom-color: var(--gt-white); margin-bottom: -2px; }
+.gt-tab-badge { background: var(--gt-red); color: #fff; font-size: .65rem; font-weight: 700; padding: 1px 5px; border-radius: 10px; }
+
+/* ── Album admin grid ────────────────────────────────── */
+.gt-albums-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 1.25rem; }
+.gt-admin-album-card  { background: var(--gt-white); border-radius: var(--gt-radius-lg); box-shadow: var(--gt-shadow); overflow: hidden; }
+.gt-admin-album-cover { position: relative; height: 140px; background: var(--gt-off); }
+.gt-admin-album-cover img { width: 100%; height: 100%; object-fit: cover; }
+.gt-album-placeholder-sm { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.gt-album-placeholder-sm i { font-size: 2rem; color: var(--gt-gray-lt); }
+.gt-album-count-badge { position: absolute; bottom: .5rem; right: .5rem; background: rgba(0,0,0,.6); color: #fff; font-size: .7rem; font-weight: 700; padding: 2px 7px; border-radius: 3px; }
+.gt-admin-album-info  { padding: 1rem; }
+.gt-admin-album-info h4 { font-size: .88rem; font-weight: 700; margin-bottom: .25rem; }
+.gt-admin-album-info p  { font-size: .78rem; color: var(--gt-gray); }
+
+/* ── File input ──────────────────────────────────────── */
+.gt-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* ── Title input (article form) ──────────────────────── */
+.gt-title-input { font-size: 1.15rem !important; font-weight: 600 !important; }
+
+/* ── Form group in admin (standalone, outside .gt-admin-form) ── */
+.gt-form-group { margin-bottom: 1.25rem; }
+.gt-form-group label { display: block; font-size: .84rem; font-weight: 600; margin-bottom: .4rem; color: #333; }
+.gt-form-group input,
+.gt-form-group textarea,
+.gt-form-group select {
+  width: 100%; padding: .6rem .9rem; border: 1px solid var(--gt-border);
+  border-radius: var(--gt-radius); font-size: .9rem; font-family: inherit;
+  transition: border-color .2s; background: var(--gt-white);
+}
+.gt-form-group input:focus,
+.gt-form-group textarea:focus,
+.gt-form-group select:focus { outline: none; border-color: var(--gt-green); }
+.gt-form-group textarea { min-height: 120px; resize: vertical; }
+.gt-form-group input[type=checkbox] { width: auto; height: 16px; }
+
+/* ── Pagination (reuse main site style) ──────────────── */
+.gt-pagination { display: flex; justify-content: center; gap: .5rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.gt-pagination a, .gt-pagination span { padding: .4rem .9rem; border: 1px solid var(--gt-border); border-radius: var(--gt-radius); font-size: .82rem; font-weight: 500; }
+.gt-pagination a:hover { background: var(--gt-off); }
+.gt-pagination .active { background: var(--gt-red); color: var(--gt-white); border-color: var(--gt-red); }
+
+@media (max-width: 1024px) {
+  .gt-stats-row  { grid-template-columns: repeat(3,1fr); }
+  .gt-stats-grid { grid-template-columns: repeat(2,1fr); }
+  .gt-dash-grid  { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .gt-admin-sidebar { transform: translateX(-100%); transition: transform .25s; }
+  .gt-admin-sidebar.open { transform: translateX(0); }
+  .gt-admin-content { margin-left: 0; }
+  .gt-admin-main    { margin-left: 0; }
+  .gt-stats-row  { grid-template-columns: repeat(2,1fr); }
+  .gt-stats-grid { grid-template-columns: repeat(2,1fr); }
+  .gt-form-row   { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Articles</h1>
+      <a href="/articles/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Article</a>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" action="/articles" class="gt-filter-bar">
+      <select name="status" onchange="this.form.submit()">
+        <option value="">All Status</option>
+        <option value="published" <%= filter==='published'?'selected':'' %>>Published</option>
+        <option value="draft" <%= filter==='draft'?'selected':'' %>>Draft</option>
+      </select>
+      <input type="text" name="q" value="<%= search||'' %>" placeholder="Search articles…">
+      <button type="submit" class="btn btn-sm btn-outline"><i class="fas fa-search"></i></button>
+      <% if (filter||search) { %><a href="/articles" class="btn btn-sm btn-ghost">Clear</a><% } %>
+    </form>
+
+    <% if (success) { %>
+    <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
+    <% } %>
+
+    <div class="gt-admin-card" style="margin-top:1rem">
+      <% if (articles && articles.length > 0) { %>
+      <table class="gt-admin-table gt-admin-table-full">
+        <thead>
+          <tr>
+            <th style="width:40px"></th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Author</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Views</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% articles.forEach(a => { %>
+          <tr>
+            <td>
+              <% if (a.cover_image) { %>
+              <div style="width:36px;height:36px;border-radius:4px;overflow:hidden;background:var(--gt-off)"><img src="/uploads/articles/<%= a.cover_image %>" style="width:100%;height:100%;object-fit:cover"></div>
+              <% } else { %>
+              <div style="width:36px;height:36px;border-radius:4px;background:var(--gt-off);display:flex;align-items:center;justify-content:center"><i class="fas fa-newspaper" style="color:#ccc;font-size:.75rem"></i></div>
+              <% } %>
+            </td>
+            <td>
+              <div style="font-weight:600;font-size:.88rem"><%= a.title.substring(0,60) %><%= a.title.length>60?'…':'' %></div>
+              <% if (a.featured) { %><span class="gt-badge gt-badge-lime" style="font-size:.65rem">Featured</span><% } %>
+            </td>
+            <td><% if (a.cat_name) { %><span class="gt-cat-dot" style="background:<%= a.cat_color||'#ccc' %>"></span> <%= a.cat_name %><% } else { %><span style="color:var(--gt-gray-lt)">—</span><% } %></td>
+            <td style="font-size:.85rem"><%= a.author_name %></td>
+            <td><span class="gt-badge <%= a.status==='published'?'gt-badge-success':'gt-badge-muted' %>"><%= a.status %></span></td>
+            <td style="font-size:.82rem;white-space:nowrap"><%= a.published_at ? new Date(a.published_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : new Date(a.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+            <td style="font-size:.82rem"><i class="fas fa-eye" style="color:var(--gt-gray-lt)"></i> <%= a.views %></td>
+            <td style="text-align:right;white-space:nowrap">
+              <% if (a.status === 'draft') { %>
+              <form action="/articles/<%= a.id %>/publish" method="POST" style="display:inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-xs btn-success" title="Publish"><i class="fas fa-check"></i></button>
+              </form>
+              <% } else { %>
+              <form action="/articles/<%= a.id %>/unpublish" method="POST" style="display:inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-xs btn-warn" title="Unpublish"><i class="fas fa-eye-slash"></i></button>
+              </form>
+              <% } %>
+              <a href="/articles/<%= a.id %>/edit" class="btn btn-xs btn-outline" style="margin-left:4px" title="Edit"><i class="fas fa-pen"></i></a>
+              <form action="/articles/<%= a.id %>/delete" method="POST" style="display:inline;margin-left:4px">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" title="Delete"><i class="fas fa-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <% if (pagination && pagination.totalPages > 1) { %>
+      <div class="gt-pagination" style="margin-top:1rem">
+        <% if (pagination.page > 1) { %><a href="/articles?page=<%= pagination.page-1 %><%= filter?'&status='+filter:'' %><%= search?'&q='+search:'' %>">&laquo; Prev</a><% } %>
+        <% for (let i=1; i<=pagination.totalPages; i++) { %>
+        <% if (i===pagination.page) { %><span class="active"><%= i %></span><% } else { %><a href="/articles?page=<%= i %><%= filter?'&status='+filter:'' %><%= search?'&q='+search:'' %>"><%= i %></a><% } %>
+        <% } %>
+        <% if (pagination.page < pagination.totalPages) { %><a href="/articles?page=<%= pagination.page+1 %><%= filter?'&status='+filter:'' %><%= search?'&q='+search:'' %>">Next &raquo;</a><% } %>
+      </div>
+      <% } %>
+
+      <% } else { %>
+      <div class="gt-empty"><i class="fas fa-newspaper"></i><p>No articles yet. <a href="/articles/new">Create one</a>.</p></div>
+      <% } %>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

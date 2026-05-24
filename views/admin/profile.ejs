@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header"><h1>My Profile</h1></div>
+
+    <% if (success) { %>
+    <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> Profile saved.</div>
+    <% } %>
+
+    <div class="gt-admin-card" style="max-width:520px">
+      <form action="/profile" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+          <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--gt-green);display:flex;align-items:center;justify-content:center;flex-shrink:0" id="avatarPreviewWrap">
+            <% if (adminUser?.avatar) { %>
+            <img id="avatarPreview" src="/uploads/avatars/<%= adminUser.avatar %>" style="width:100%;height:100%;object-fit:cover">
+            <% } else { %>
+            <i class="fas fa-user" style="color:#fff;font-size:1.5rem"></i>
+            <% } %>
+          </div>
+          <div>
+            <input type="file" name="images" accept="image/*" id="avatarInput" class="gt-file-input">
+            <label for="avatarInput" class="btn btn-sm btn-outline"><i class="fas fa-camera"></i> Change Photo</label>
+            <p style="font-size:.75rem;color:var(--gt-gray);margin-top:.3rem">JPG, PNG up to 2MB</p>
+          </div>
+        </div>
+
+        <div class="gt-form-group">
+          <label>Display Name</label>
+          <input type="text" name="name" value="<%= adminUser?.name||'' %>" required>
+        </div>
+        <div class="gt-form-group">
+          <label>Bio <span style="font-weight:400;color:var(--gt-gray)">(shown on your author profile page)</span></label>
+          <textarea name="bio" rows="3" placeholder="A few sentences about yourself…"><%= adminUser?.bio||'' %></textarea>
+        </div>
+        <p style="font-size:.8rem;color:var(--gt-gray);margin-bottom:1rem">Your public profile: <a href="/author/<%= adminUser?.username %>" target="_blank">/author/<%= adminUser?.username %></a></p>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Profile</button>
+      </form>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+<script>
+document.getElementById('avatarInput')?.addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wrap = document.getElementById('avatarPreviewWrap');
+    wrap.innerHTML = `<img id="avatarPreview" src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+  };
+  reader.readAsDataURL(file);
+});
+</script>
+</body>
+</html>

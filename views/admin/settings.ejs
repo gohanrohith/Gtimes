@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Settings</h1>
+    </div>
+
+    <% if (success) { %>
+    <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> Settings saved.</div>
+    <% } %>
+
+    <form action="/settings" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+
+        <div>
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h3 style="font-size:.9rem;font-weight:700;margin-bottom:1rem">Site Identity</h3>
+            <div class="gt-form-group">
+              <label>Site Name</label>
+              <input type="text" name="site_name" value="<%= settings?.site_name || 'GTimes' %>">
+            </div>
+            <div class="gt-form-group">
+              <label>Site Tagline</label>
+              <input type="text" name="site_tagline" value="<%= settings?.site_tagline || 'Your School. Your Stories.' %>">
+            </div>
+            <div class="gt-form-group">
+              <label>Contact Email</label>
+              <input type="email" name="contact_email" value="<%= settings?.contact_email || 'gtimes@ghs.ac.in' %>">
+            </div>
+          </div>
+
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h3 style="font-size:.9rem;font-weight:700;margin-bottom:1rem">Breaking News Ticker</h3>
+            <div class="gt-form-group">
+              <label>Ticker Text <span style="font-weight:400;color:var(--gt-gray)">(leave blank to hide)</span></label>
+              <input type="text" name="breaking_news" value="<%= settings?.breaking_news || '' %>" placeholder="e.g. Annual Day celebrations on Dec 15th — All students attend!">
+            </div>
+          </div>
+
+          <div class="gt-admin-card">
+            <h3 style="font-size:.9rem;font-weight:700;margin-bottom:1rem">Social Media</h3>
+            <div class="gt-form-group">
+              <label><i class="fab fa-facebook" style="color:#1877f2"></i> Facebook URL</label>
+              <input type="url" name="facebook_url" value="<%= settings?.facebook_url || '' %>" placeholder="https://facebook.com/...">
+            </div>
+            <div class="gt-form-group">
+              <label><i class="fab fa-instagram" style="color:#e1306c"></i> Instagram URL</label>
+              <input type="url" name="instagram_url" value="<%= settings?.instagram_url || '' %>" placeholder="https://instagram.com/...">
+            </div>
+            <div class="gt-form-group">
+              <label><i class="fab fa-youtube" style="color:#ff0000"></i> YouTube URL</label>
+              <input type="url" name="youtube_url" value="<%= settings?.youtube_url || '' %>" placeholder="https://youtube.com/@...">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h3 style="font-size:.9rem;font-weight:700;margin-bottom:1rem">Comments</h3>
+            <div class="gt-form-group">
+              <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
+                <input type="checkbox" name="comments_enabled" value="1" <%= settings?.comments_enabled!=='0' ? 'checked' : '' %> style="width:auto">
+                Enable comments on articles
+              </label>
+            </div>
+            <div class="gt-form-group">
+              <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
+                <input type="checkbox" name="comments_moderation" value="1" <%= settings?.comments_moderation!=='0' ? 'checked' : '' %> style="width:auto">
+                Require approval before publishing
+              </label>
+            </div>
+          </div>
+
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h3 style="font-size:.9rem;font-weight:700;margin-bottom:1rem">Change Password</h3>
+            <div class="gt-form-group">
+              <label>Current Password</label>
+              <input type="password" name="current_password" placeholder="••••••••">
+            </div>
+            <div class="gt-form-group">
+              <label>New Password</label>
+              <input type="password" name="new_password" placeholder="Minimum 8 characters">
+            </div>
+            <div class="gt-form-group">
+              <label>Confirm New Password</label>
+              <input type="password" name="confirm_password" placeholder="••••••••">
+            </div>
+            <p style="font-size:.78rem;color:var(--gt-gray)">Leave blank to keep current password.</p>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+            <i class="fas fa-save"></i> Save Settings
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

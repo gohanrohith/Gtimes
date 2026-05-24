@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Newsletter Subscribers</h1>
+      <a href="/newsletter/export.csv" class="btn btn-outline"><i class="fas fa-download"></i> Export CSV</a>
+    </div>
+
+    <div class="gt-admin-card">
+      <div style="margin-bottom:1rem;font-size:.88rem;color:var(--gt-gray)">
+        <strong style="color:var(--gt-dark)"><%= subscribers.length %></strong> subscriber<%= subscribers.length!==1?'s':'' %> total
+      </div>
+      <% if (subscribers.length > 0) { %>
+      <table class="gt-admin-table">
+        <thead><tr><th>Email</th><th>Name</th><th>Subscribed</th><th></th></tr></thead>
+        <tbody>
+          <% subscribers.forEach(s => { %>
+          <tr>
+            <td><%= s.email %></td>
+            <td><%= s.name || '—' %></td>
+            <td><%= new Date(s.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+            <td>
+              <form method="POST" action="/newsletter/<%= s.id %>/delete" style="display:inline" onsubmit="return confirm('Remove this subscriber?')">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+      <div class="gt-empty"><i class="fas fa-envelope"></i><p>No subscribers yet.</p></div>
+      <% } %>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

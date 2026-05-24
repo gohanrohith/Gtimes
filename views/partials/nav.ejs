@@ -1,0 +1,35 @@
+<nav class="gt-nav" id="gtNav">
+  <div class="gt-nav-inner">
+    <a href="/" class="gt-brand">
+      <span class="gt-brand-g">G</span><span class="gt-brand-times">Times</span>
+    </a>
+
+    <button class="gt-nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class="gt-nav-menu" id="navMenu">
+      <li><a href="/" class="gt-nav-link">Home</a></li>
+      <li><a href="/articles" class="gt-nav-link">News</a></li>
+      <li class="gt-has-dropdown">
+        <a href="/articles" class="gt-nav-link">Categories <i class="fas fa-chevron-down"></i></a>
+        <ul class="gt-dropdown">
+          <% if (typeof categories !== 'undefined') { categories.forEach(c => { %>
+          <li><a href="/category/<%= c.slug %>" style="border-left:3px solid <%= c.color %>"><%= c.name %></a></li>
+          <% }) } %>
+        </ul>
+      </li>
+      <li><a href="/events" class="gt-nav-link">Events</a></li>
+      <li><a href="/gallery" class="gt-nav-link">Gallery</a></li>
+      <li><a href="/videos" class="gt-nav-link">Videos</a></li>
+      <li><a href="/about" class="gt-nav-link">About</a></li>
+    </ul>
+
+    <div class="gt-nav-search">
+      <form action="/search" method="GET" style="display:flex;align-items:center;gap:.5rem">
+        <input type="text" name="q" placeholder="Search..." class="gt-search-input">
+        <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--gt-white)"><i class="fas fa-search"></i></button>
+      </form>
+    </div>
+  </div>
+</nav>

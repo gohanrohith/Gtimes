@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<div class="gt-breadcrumb">
+  <div class="container">
+    <a href="/">Home</a><span>/</span>
+    <a href="/gallery">Gallery</a><span>/</span>
+    <span><%= album.title %></span>
+  </div>
+</div>
+<div class="gt-page-hero" style="padding:2.5rem 0">
+  <div class="container">
+    <h1><%= album.title %></h1>
+    <% if (album.description) { %><p><%= album.description %></p><% } %>
+    <p style="font-size:.85rem;opacity:.7;margin-top:.5rem"><%= photos.length %> photo<%= photos.length!==1?'s':'' %></p>
+  </div>
+</div>
+<main class="section">
+  <div class="container">
+    <% if (photos && photos.length > 0) { %>
+    <div class="gt-photo-grid">
+      <% photos.forEach((photo, idx) => { %>
+      <div class="gt-photo-item" data-index="<%= idx %>" data-src="/uploads/gallery/<%= photo.filename %>" data-caption="<%= photo.caption||'' %>">
+        <img src="/uploads/gallery/<%= photo.filename %>" alt="<%= photo.caption || album.title %>" loading="lazy">
+        <% if (photo.caption) { %>
+        <div class="gt-photo-caption"><%= photo.caption %></div>
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+    <% } else { %>
+    <div class="gt-empty"><i class="fas fa-camera"></i><p>No photos in this album yet.</p></div>
+    <% } %>
+  </div>
+</main>
+
+<!-- Lightbox -->
+<div class="gt-lightbox" id="lightbox">
+  <button class="gt-lb-close" id="lbClose"><i class="fas fa-times"></i></button>
+  <button class="gt-lb-prev" id="lbPrev"><i class="fas fa-chevron-left"></i></button>
+  <button class="gt-lb-next" id="lbNext"><i class="fas fa-chevron-right"></i></button>
+  <div class="gt-lb-content">
+    <img id="lbImg" src="" alt="">
+    <p id="lbCaption" class="gt-lb-caption"></p>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

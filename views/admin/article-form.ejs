@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <style>
+    .gt-lang-tabs { display:flex; gap:.5rem; margin-bottom:0; border-bottom:2px solid var(--gt-light,#e8e8e8); padding-bottom:0; }
+    .gt-lang-tab {
+      padding:.5rem 1.1rem; border:none; background:none; cursor:pointer;
+      font-family:inherit; font-size:.85rem; font-weight:600; color:var(--gt-gray,#888);
+      border-bottom:2px solid transparent; margin-bottom:-2px; border-radius:0;
+      transition:color .15s, border-color .15s;
+    }
+    .gt-lang-tab:hover { color:var(--gt-dark,#111); }
+    .gt-lang-tab.active { color:var(--gt-green,#00663A); border-bottom-color:var(--gt-green,#00663A); }
+    .gt-lang-panel { padding-top:1rem; }
+    .gt-lang-hint {
+      font-size:.78rem; color:var(--gt-gray,#888); margin-bottom:.6rem;
+      display:flex; align-items:center; gap:.4rem;
+    }
+  </style>
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1><%= article ? 'Edit Article' : 'New Article' %></h1>
+      <a href="/articles" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <% if (errors && errors.length > 0) { %>
+    <div class="gt-alert gt-alert-error">
+      <ul style="margin:0;padding-left:1.2rem">
+        <% errors.forEach(e => { %><li><%= e.msg %></li><% }) %>
+      </ul>
+    </div>
+    <% } %>
+
+    <form action="<%= article ? '/articles/'+article.id+'/edit' : '/articles/new' %>" method="POST" enctype="multipart/form-data" id="articleForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <!-- Hidden inputs — synced from Quill on submit -->
+      <input type="hidden" name="content"    id="inputEn">
+      <input type="hidden" name="content_hi" id="inputHi">
+      <input type="hidden" name="content_te" id="inputTe">
+
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+
+        <!-- Left column -->
+        <div>
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <div class="gt-form-group">
+              <label>Title *</label>
+              <input type="text" name="title" value="<%= article?.title||'' %>" required placeholder="Article headline" class="gt-title-input">
+            </div>
+            <div class="gt-form-group">
+              <label>Excerpt <span style="font-weight:400;color:var(--gt-gray)">(shown in article cards)</span></label>
+              <textarea name="excerpt" rows="2" placeholder="Brief summary…"><%= article?.excerpt||'' %></textarea>
+            </div>
+          </div>
+
+          <!-- Language tabs -->
+          <div class="gt-admin-card">
+            <div class="gt-lang-tabs">
+              <button type="button" class="gt-lang-tab active" data-target="tab-en">English</button>
+              <button type="button" class="gt-lang-tab"        data-target="tab-hi">हिंदी</button>
+              <button type="button" class="gt-lang-tab"        data-target="tab-te">తెలుగు</button>
+            </div>
+
+            <div id="tab-en" class="gt-lang-panel">
+              <div id="quillEn" style="min-height:380px;background:#fff"><%= article?.content||'' %></div>
+            </div>
+
+            <div id="tab-hi" class="gt-lang-panel">
+              <p class="gt-lang-hint"><i class="fas fa-info-circle"></i> Write in English, copy to ChatGPT/Gemini → ask for Hindi translation → paste here.</p>
+              <div id="quillHi" style="min-height:380px;background:#fff"><%= article?.content_hi||'' %></div>
+            </div>
+
+            <div id="tab-te" class="gt-lang-panel">
+              <p class="gt-lang-hint"><i class="fas fa-info-circle"></i> Write in English, copy to ChatGPT/Gemini → ask for Telugu translation → paste here.</p>
+              <div id="quillTe" style="min-height:380px;background:#fff"><%= article?.content_te||'' %></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div>
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h4 style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Publish</h4>
+            <div class="gt-form-group">
+              <label>Status</label>
+              <select name="status">
+                <option value="draft"     <%= (article?.status||'draft')==='draft'?'selected':'' %>>Draft</option>
+                <option value="published" <%= article?.status==='published'?'selected':'' %>>Published</option>
+              </select>
+            </div>
+            <div class="gt-form-group">
+              <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
+                <input type="checkbox" name="featured" value="1" <%= article?.featured?'checked':'' %> style="width:auto">
+                Mark as Featured Story
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+              <i class="fas fa-save"></i> <%= article ? 'Save Changes' : 'Create Article' %>
+            </button>
+          </div>
+
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h4 style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Category</h4>
+            <div class="gt-form-group">
+              <select name="category_id">
+                <option value="">— Uncategorised —</option>
+                <% categories.forEach(c => { %>
+                <option value="<%= c.id %>" <%= article?.category_id==c.id?'selected':'' %>><%= c.name %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h4 style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Cover Image</h4>
+            <% if (article?.cover_image) { %>
+            <div style="margin-bottom:.75rem;border-radius:6px;overflow:hidden"><img src="/uploads/articles/<%= article.cover_image %>" style="width:100%;max-height:140px;object-fit:cover" id="coverPreview"></div>
+            <% } else { %>
+            <div style="height:100px;background:var(--gt-off);border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;color:var(--gt-gray-lt)" id="coverPlaceholder"><i class="fas fa-image" style="font-size:1.5rem"></i></div>
+            <img id="coverPreview" style="display:none;width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:.75rem">
+            <% } %>
+            <input type="file" name="cover_image" accept="image/*" id="coverInput" class="gt-file-input">
+            <label for="coverInput" class="btn btn-sm btn-outline" style="width:100%;justify-content:center"><i class="fas fa-upload"></i> Upload Image</label>
+            <% if (article?.cover_image) { %>
+            <label style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem;font-size:.8rem;cursor:pointer">
+              <input type="checkbox" name="remove_cover" value="1" style="width:auto"> Remove current image
+            </label>
+            <% } %>
+          </div>
+
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h4 style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Author</h4>
+            <div class="gt-form-group">
+              <input type="text" name="author_name" value="<%= article?.author_name||admin.username %>" placeholder="Author name">
+            </div>
+          </div>
+
+          <div class="gt-admin-card">
+            <h4 style="font-size:.85rem;font-weight:700;margin-bottom:.5rem">Tags</h4>
+            <p style="font-size:.75rem;color:var(--gt-gray);margin-bottom:.75rem">Comma-separated — e.g. <em>sports, cbse, warangal</em></p>
+            <div class="gt-form-group">
+              <input type="text" name="tags" value="<%= articleTags||'' %>" placeholder="tag1, tag2, tag3">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+const toolbarOptions = [
+  [{ header: [2, 3, false] }],
+  ['bold', 'italic', 'underline'],
+  [{ list: 'ordered' }, { list: 'bullet' }],
+  ['blockquote', 'link', 'image'],
+  ['clean']
+];
+
+// Briefly make all panels block+off-screen so Quill can measure them during init
+['tab-hi', 'tab-te'].forEach(id => {
+  const el = document.getElementById(id);
+  el.style.cssText = 'display:block;position:absolute;visibility:hidden;pointer-events:none';
+});
+
+const quillEn = new Quill('#quillEn', { theme: 'snow', modules: { toolbar: toolbarOptions } });
+const quillHi = new Quill('#quillHi', { theme: 'snow', modules: { toolbar: toolbarOptions } });
+const quillTe = new Quill('#quillTe', { theme: 'snow', modules: { toolbar: toolbarOptions } });
+
+// Restore hidden state
+['tab-hi', 'tab-te'].forEach(id => {
+  const el = document.getElementById(id);
+  el.style.cssText = 'display:none';
+});
+
+// Tab switching
+document.querySelectorAll('.gt-lang-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.gt-lang-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.gt-lang-panel').forEach(p => p.style.display = 'none');
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).style.display = 'block';
+  });
+});
+
+// Sync all 3 editors to hidden inputs before submit
+document.getElementById('articleForm').addEventListener('submit', function() {
+  document.getElementById('inputEn').value = quillEn.root.innerHTML;
+  document.getElementById('inputHi').value = quillHi.root.innerHTML;
+  document.getElementById('inputTe').value = quillTe.root.innerHTML;
+});
+
+// Cover image preview
+document.getElementById('coverInput')?.addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('coverPreview');
+    const ph   = document.getElementById('coverPlaceholder');
+    if (ph) ph.style.display = 'none';
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+</script>
+</body>
+</html>

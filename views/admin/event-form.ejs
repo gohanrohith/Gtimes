@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1><%= event ? 'Edit Event' : 'New Event' %></h1>
+      <a href="/events" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <% if (errors && errors.length > 0) { %>
+    <div class="gt-alert gt-alert-error">
+      <ul style="margin:0;padding-left:1.2rem">
+        <% errors.forEach(e => { %><li><%= e.msg %></li><% }) %>
+      </ul>
+    </div>
+    <% } %>
+
+    <form action="<%= event ? '/events/'+event.id+'/edit' : '/events/new' %>" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start">
+
+        <div class="gt-admin-card">
+          <div class="gt-form-group">
+            <label>Event Title *</label>
+            <input type="text" name="title" value="<%= event?.title||'' %>" required placeholder="e.g. Annual Sports Day 2025">
+          </div>
+          <div class="gt-form-group">
+            <label>Description</label>
+            <textarea name="description" rows="4" placeholder="Brief description of the event…"><%= event?.description||'' %></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="gt-form-group">
+              <label>Event Date</label>
+              <input type="date" name="event_date" value="<%= event?.event_date ? new Date(event.event_date).toISOString().split('T')[0] : '' %>">
+            </div>
+            <div class="gt-form-group">
+              <label>Event Time</label>
+              <input type="time" name="event_time" value="<%= event?.event_time||'' %>">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="gt-form-group">
+              <label>Location / Venue</label>
+              <input type="text" name="location" value="<%= event?.location||'' %>" placeholder="e.g. School Auditorium">
+            </div>
+            <div class="gt-form-group">
+              <label>Campus</label>
+              <select name="campus">
+                <option value="">All Campuses</option>
+                <option value="Hasanparthy" <%= event?.campus==='Hasanparthy'?'selected':'' %>>Hasanparthy</option>
+                <option value="Hunter Road" <%= event?.campus==='Hunter Road'?'selected':'' %>>Hunter Road</option>
+                <option value="Mancherial" <%= event?.campus==='Mancherial'?'selected':'' %>>Mancherial</option>
+                <option value="Gopalpur" <%= event?.campus==='Gopalpur'?'selected':'' %>>Gopalpur</option>
+                <option value="Naimnagar" <%= event?.campus==='Naimnagar'?'selected':'' %>>Naimnagar</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
+            <h4 style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Status</h4>
+            <div class="gt-form-group">
+              <select name="status">
+                <option value="upcoming" <%= (event?.status||'upcoming')==='upcoming'?'selected':'' %>>Upcoming</option>
+                <option value="ongoing" <%= event?.status==='ongoing'?'selected':'' %>>Ongoing</option>
+                <option value="completed" <%= event?.status==='completed'?'selected':'' %>>Completed</option>
+                <option value="cancelled" <%= event?.status==='cancelled'?'selected':'' %>>Cancelled</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+              <i class="fas fa-save"></i> <%= event ? 'Save Changes' : 'Create Event' %>
+            </button>
+          </div>
+
+          <div class="gt-admin-card">
+            <h4 style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Cover Image</h4>
+            <% if (event?.cover_image) { %>
+            <div style="margin-bottom:.75rem;border-radius:6px;overflow:hidden"><img src="/uploads/events/<%= event.cover_image %>" style="width:100%;max-height:130px;object-fit:cover" id="coverPreview"></div>
+            <% } else { %>
+            <div style="height:80px;background:var(--gt-off);border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;color:var(--gt-gray-lt)" id="coverPlaceholder"><i class="fas fa-image" style="font-size:1.5rem"></i></div>
+            <img id="coverPreview" style="display:none;width:100%;max-height:130px;object-fit:cover;border-radius:6px;margin-bottom:.75rem">
+            <% } %>
+            <input type="file" name="cover_image" accept="image/*" id="coverInput" class="gt-file-input">
+            <label for="coverInput" class="btn btn-sm btn-outline" style="width:100%;justify-content:center"><i class="fas fa-upload"></i> Upload Image</label>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+<script>
+document.getElementById('coverInput')?.addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('coverPreview');
+    const ph = document.getElementById('coverPlaceholder');
+    if (ph) ph.style.display = 'none';
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+</script>
+</body>
+</html>

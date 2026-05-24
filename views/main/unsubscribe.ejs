@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<main class="section">
+  <div class="container" style="max-width:480px;text-align:center;padding:4rem 1rem">
+    <% if (done) { %>
+    <div style="font-size:3rem;margin-bottom:1rem">👋</div>
+    <h1 style="font-size:1.5rem;margin-bottom:.75rem">You're unsubscribed</h1>
+    <p style="color:var(--gt-gray)">You won't receive newsletter emails from GTimes anymore. You can resubscribe any time from the footer.</p>
+    <% } else { %>
+    <h1 style="font-size:1.5rem;margin-bottom:.75rem">Invalid link</h1>
+    <p style="color:var(--gt-gray)">This unsubscribe link is invalid or has already been used.</p>
+    <% } %>
+    <a href="/" class="btn btn-primary" style="margin-top:1.5rem">Back to GTimes</a>
+  </div>
+</main>
+<%- include('../partials/footer') %>
+</body>
+</html>

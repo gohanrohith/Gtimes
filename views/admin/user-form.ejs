@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1><%= user ? 'Edit User' : 'New User' %></h1>
+      <a href="/users" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <% if (error) { %>
+    <div class="gt-alert gt-alert-error"><%= error %></div>
+    <% } %>
+
+    <div class="gt-admin-card" style="max-width:480px">
+      <form action="<%= user ? '/users/'+user.id+'/edit' : '/users/new' %>" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="gt-form-group">
+          <label>Full Name *</label>
+          <input type="text" name="name" value="<%= user?.name||'' %>" required placeholder="Display name">
+        </div>
+        <% if (!user) { %>
+        <div class="gt-form-group">
+          <label>Username *</label>
+          <input type="text" name="username" required placeholder="login username (no spaces)">
+        </div>
+        <div class="gt-form-group">
+          <label>Password *</label>
+          <input type="password" name="password" required placeholder="Minimum 8 characters" minlength="8">
+        </div>
+        <% } else { %>
+        <div class="gt-form-group">
+          <label>New Password <span style="font-weight:400;color:var(--gt-gray)">(leave blank to keep current)</span></label>
+          <input type="password" name="new_password" placeholder="Minimum 8 characters" minlength="8">
+        </div>
+        <% } %>
+        <div class="gt-form-group">
+          <label>Role</label>
+          <select name="role">
+            <option value="author"  <%= (user?.role||'author')==='author' ?'selected':'' %>>Author — own articles only</option>
+            <option value="editor"  <%= user?.role==='editor'?'selected':'' %>>Editor — all content, no settings</option>
+            <option value="super"   <%= user?.role==='super' ?'selected':'' %>>Super Admin — full access</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> <%= user ? 'Save Changes' : 'Create User' %></button>
+      </form>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

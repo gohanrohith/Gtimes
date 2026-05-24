@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= settings?.site_tagline || 'Your School. Your Stories.' %> — GTimes, the student media platform of Greenwood High School Warangal.">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsMediaOrganization",
+    "name": "<%= settings?.site_name || 'GTimes' %>",
+    "description": "<%= settings?.site_tagline || 'Your School. Your Stories.' %>",
+    "url": "https://gtimes.in",
+    "logo": "https://gtimes.in/images/logo.png",
+    "foundingOrganization": { "@type": "Organization", "name": "Greenwood High School Warangal" }
+  }
+  </script>
+</head>
+<body>
+<%- include('../partials/nav') %>
+
+<% if (settings?.breaking_news && settings.breaking_news.trim()) { %>
+<div class="gt-ticker">
+  <div class="gt-ticker-label"><i class="fas fa-bolt"></i> Breaking</div>
+  <div class="gt-ticker-track"><span><%= settings.breaking_news %></span></div>
+</div>
+<% } %>
+
+<main>
+
+  <section style="background:var(--gt-dark);padding:56px 0">
+    <div class="container">
+      <% if (featured) { %>
+      <a href="/article/<%= featured.slug %>" class="gt-featured" style="text-decoration:none">
+        <div class="gt-featured-image">
+          <% if (featured.cover_image) { %>
+          <img src="/uploads/articles/<%= featured.cover_image %>" alt="<%= featured.title %>">
+          <% } else { %>
+          <div class="gt-featured-placeholder"><i class="fas fa-newspaper"></i></div>
+          <% } %>
+        </div>
+        <div class="gt-featured-body">
+          <% if (featured.cat_name) { %><span class="gt-cat-badge" style="background:<%= featured.cat_color || '#e63946' %>"><%= featured.cat_name %></span><% } %>
+          <h2><%= featured.title %></h2>
+          <p><%= featured.excerpt || '' %></p>
+          <div class="gt-featured-meta">
+            <span><i class="fas fa-user"></i> <%= featured.author_name %></span>
+            <span><i class="fas fa-calendar"></i> <%= new Date(featured.published_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></span>
+            <span><i class="fas fa-eye"></i> <%= featured.views %> views</span>
+          </div>
+          <span class="btn btn-primary" style="width:fit-content">Read Full Story <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </a>
+      <% } else { %>
+      <div style="text-align:center;padding:3rem;color:rgba(255,255,255,.5)">
+        <i class="fas fa-newspaper" style="font-size:3rem;margin-bottom:1rem;display:block"></i>
+        <p style="font-size:1.1rem">No featured articles yet. Check back soon.</p>
+      </div>
+      <% } %>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="gt-home-grid">
+        <div>
+          <div class="gt-section-header">
+            <h2>Latest News</h2>
+            <a href="/articles">View All <i class="fas fa-arrow-right"></i></a>
+          </div>
+          <% if (latest && latest.length > 0) { %>
+          <div class="gt-articles-grid">
+            <% latest.forEach(a => { %>
+            <a href="/article/<%= a.slug %>" class="gt-article-card" style="text-decoration:none">
+              <div class="gt-card-image">
+                <% if (a.cover_image) { %><img src="/uploads/articles/<%= a.cover_image %>" alt="<%= a.title %>" loading="lazy"><% } else { %><div style="height:100%;display:flex;align-items:center;justify-content:center;background:var(--gt-off)"><i class="fas fa-newspaper" style="font-size:2rem;color:#ccc"></i></div><% } %>
+              </div>
+              <div class="gt-card-body">
+                <div class="gt-card-meta">
+                  <% if (a.cat_name) { %><span class="gt-cat-badge" style="background:<%= a.cat_color||'#e63946' %>"><%= a.cat_name %></span><% } %>
+                  <span class="gt-card-date"><%= new Date(a.published_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) %></span>
+                </div>
+                <h3><%= a.title %></h3>
+                <p><%= (a.excerpt||'').substring(0,100) %><%= (a.excerpt||'').length>100?'…':'' %></p>
+              </div>
+              <div class="gt-card-footer">
+                <span class="gt-read-more">Read More <i class="fas fa-arrow-right"></i></span>
+                <span class="gt-views"><i class="fas fa-clock"></i> <%= a.reading_time %> min &nbsp;<i class="fas fa-eye"></i> <%= a.views %></span>
+              </div>
+            </a>
+            <% }) %>
+          </div>
+          <% } else { %>
+          <div class="gt-empty"><i class="fas fa-newspaper"></i><p>No articles published yet.</p></div>
+          <% } %>
+        </div>
+
+        <aside>
+          <% if (events && events.length > 0) { %>
+          <div class="gt-sidebar-section">
+            <h4>Upcoming Events</h4>
+            <% events.forEach(ev => { %>
+            <div class="gt-event-item">
+              <div class="gt-event-date"><i class="fas fa-calendar-alt"></i> <%= ev.event_date ? new Date(ev.event_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : 'TBA' %></div>
+              <h5><%= ev.title %></h5>
+              <% if (ev.location) { %><span><i class="fas fa-map-marker-alt"></i> <%= ev.location %></span><% } %>
+            </div>
+            <% }) %>
+            <a href="/events" class="btn btn-outline btn-sm" style="margin-top:.75rem;width:100%;justify-content:center">All Events</a>
+          </div>
+          <% } %>
+
+          <div class="gt-sidebar-section">
+            <h4>Categories</h4>
+            <% if (categories && categories.length > 0) { categories.forEach(c => { %>
+            <a href="/category/<%= c.slug %>" style="display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--gt-light);font-size:.88rem;color:var(--gt-gray-dk)">
+              <span style="width:10px;height:10px;border-radius:50%;background:<%= c.color %>;flex-shrink:0"></span>
+              <%= c.name %>
+            </a>
+            <% }) } %>
+          </div>
+
+          <% if (videos && videos.length > 0) { %>
+          <div class="gt-sidebar-section">
+            <h4>Recent Videos</h4>
+            <% videos.forEach(v => { %>
+            <a href="/videos" style="display:flex;gap:.75rem;margin-bottom:.75rem;align-items:flex-start">
+              <div style="width:80px;height:52px;border-radius:4px;overflow:hidden;background:var(--gt-dark);flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                <% if (v.youtube_id) { %><img src="https://img.youtube.com/vi/<%= v.youtube_id %>/mqdefault.jpg" alt="<%= v.title %>" style="width:100%;height:100%;object-fit:cover"><% } else { %><i class="fas fa-play" style="color:var(--gt-red)"></i><% } %>
+              </div>
+              <div>
+                <p style="font-size:.82rem;font-weight:600;line-height:1.4"><%= v.title %></p>
+              </div>
+            </a>
+            <% }) %>
+            <a href="/videos" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">All Videos</a>
+          </div>
+          <% } %>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+</main>
+<%- include('../partials/footer') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

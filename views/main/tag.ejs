@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<div class="gt-page-hero">
+  <div class="container">
+    <p style="font-size:.85rem;opacity:.7;margin-bottom:.5rem">Tag</p>
+    <h1><i class="fas fa-tag" style="font-size:.8em"></i> #<%= tag.name %></h1>
+    <p><%= pagination.total %> article<%= pagination.total !== 1 ? 's' : '' %></p>
+  </div>
+</div>
+<main class="section">
+  <div class="container">
+    <% if (articles && articles.length > 0) { %>
+    <div class="gt-articles-grid">
+      <% articles.forEach(a => { %>
+      <a href="/article/<%= a.slug %>" class="gt-article-card" style="text-decoration:none">
+        <div class="gt-card-image">
+          <% if (a.cover_image) { %><img src="/uploads/articles/<%= a.cover_image %>" alt="<%= a.title %>" loading="lazy"><% } else { %><div style="height:100%;display:flex;align-items:center;justify-content:center;background:var(--gt-off)"><i class="fas fa-newspaper" style="font-size:2rem;color:#ccc"></i></div><% } %>
+        </div>
+        <div class="gt-card-body">
+          <div class="gt-card-meta">
+            <% if (a.cat_name) { %><span class="gt-cat-badge" style="background:<%= a.cat_color||'#e63946' %>"><%= a.cat_name %></span><% } %>
+            <span class="gt-card-date"><%= new Date(a.published_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></span>
+          </div>
+          <h3><%= a.title %></h3>
+          <p><%= (a.excerpt||'').substring(0,100) %><%= (a.excerpt||'').length>100?'…':'' %></p>
+        </div>
+        <div class="gt-card-footer">
+          <span class="gt-read-more">Read More <i class="fas fa-arrow-right"></i></span>
+          <span class="gt-views"><i class="fas fa-clock"></i> <%= a.reading_time %> min</span>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+    <% if (pagination.totalPages > 1) { %>
+    <div class="gt-pagination">
+      <% if (pagination.page > 1) { %><a href="/tag/<%= tag.slug %>?page=<%= pagination.page-1 %>">&laquo; Prev</a><% } %>
+      <% for (let i=1; i<=pagination.totalPages; i++) { %>
+      <% if (i===pagination.page) { %><span class="active"><%= i %></span><% } else { %><a href="/tag/<%= tag.slug %>?page=<%= i %>"><%= i %></a><% } %>
+      <% } %>
+      <% if (pagination.page < pagination.totalPages) { %><a href="/tag/<%= tag.slug %>?page=<%= pagination.page+1 %>">Next &raquo;</a><% } %>
+    </div>
+    <% } %>
+    <% } else { %>
+    <div class="gt-empty"><i class="fas fa-tag"></i><p>No articles with this tag yet.</p></div>
+    <% } %>
+  </div>
+</main>
+<%- include('../partials/footer') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

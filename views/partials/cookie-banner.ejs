@@ -1,0 +1,31 @@
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;color:#ddd;z-index:9999;padding:.9rem 0;border-top:2px solid var(--gt-green,#00663A)">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+    <p style="margin:0;font-size:.82rem;line-height:1.5">
+      We use cookies to improve your experience.
+      <a href="/about" style="color:var(--gt-lime,#B5D236)">Learn more</a>
+    </p>
+    <div style="display:flex;gap:.5rem;flex-shrink:0">
+      <button onclick="acceptCookies()" style="padding:.35rem 1rem;border-radius:20px;background:var(--gt-green,#00663A);color:#fff;border:none;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer">Accept</button>
+      <button onclick="declineCookies()" style="padding:.35rem 1rem;border-radius:20px;background:transparent;color:#aaa;border:1px solid #444;font-family:inherit;font-size:.8rem;cursor:pointer">Decline</button>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  const consent = localStorage.getItem('gt_cookie_consent');
+  if (!consent) {
+    document.addEventListener('DOMContentLoaded', () => {
+      const banner = document.getElementById('cookieBanner');
+      if (banner) banner.style.display = 'block';
+    });
+  }
+})();
+function acceptCookies() {
+  localStorage.setItem('gt_cookie_consent', 'accepted');
+  document.getElementById('cookieBanner').style.display = 'none';
+}
+function declineCookies() {
+  localStorage.setItem('gt_cookie_consent', 'declined');
+  document.getElementById('cookieBanner').style.display = 'none';
+}
+</script>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<div class="gt-page-hero">
+  <div class="container">
+    <h1>About GTimes</h1>
+    <p>The student media platform of Greenwood High School</p>
+  </div>
+</div>
+<main class="section">
+  <div class="container" style="max-width:760px;margin:0 auto">
+
+    <div style="text-align:center;margin-bottom:3rem">
+      <div style="font-size:3rem;font-weight:900;margin-bottom:.5rem">
+        <span style="color:var(--gt-red)">G</span><span style="color:var(--gt-dark)">Times</span>
+      </div>
+      <p style="color:var(--gt-gray);font-size:1.05rem"><%= settings?.site_tagline || 'Your School. Your Stories.' %></p>
+    </div>
+
+    <div class="gt-article-content">
+      <p>GTimes is the official student media platform of <strong>Greenwood High School, Warangal</strong>. We cover news, events, achievements, and stories from all Greenwood campuses — giving students, parents, and staff a window into the vibrant life of our school community.</p>
+
+      <h2>What We Cover</h2>
+      <ul>
+        <li><strong>School News</strong> — Announcements, policy updates, and important notices</li>
+        <li><strong>Achievements</strong> — Student and staff milestones worth celebrating</li>
+        <li><strong>Sports</strong> — Match reports, tournament results, and athlete spotlights</li>
+        <li><strong>Campus Life</strong> — Day-to-day moments and student experiences</li>
+        <li><strong>Education</strong> — Academic programmes, curriculum, and learning</li>
+        <li><strong>Community</strong> — Events, outreach, and stories beyond the campus gate</li>
+      </ul>
+
+      <h2>Our Campuses</h2>
+      <p>GTimes serves all five Greenwood campuses:</p>
+      <ul>
+        <li>Greenwood High School, Hasanparthy (Est. 2003)</li>
+        <li>Greenwood High School, Hunter Road (Est. 2009)</li>
+        <li>Greenwood High School, Mancherial (Est. 2022)</li>
+        <li>Greenwood High School, Gopalpur (Est. 2023)</li>
+        <li>Greenwood High School, Naimnagar (Est. 2025)</li>
+      </ul>
+
+      <h2>Contact</h2>
+      <p>Have a story tip, correction, or feedback? Write to us at <a href="mailto:gtimes@ghs.ac.in">gtimes@ghs.ac.in</a></p>
+      <p>Visit the main school website at <a href="https://ghs.ac.in" target="_blank" rel="noopener">ghs.ac.in</a></p>
+    </div>
+  </div>
+</main>
+<%- include('../partials/footer') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>GTimes Admin — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin-login-page">
+  <div class="gt-login-wrap">
+    <div class="gt-login-brand">
+      <span style="color:var(--gt-red)">G</span>Times <span style="font-size:.9rem;font-weight:400;opacity:.6">Admin</span>
+    </div>
+    <p class="gt-login-sub">Sign in to manage content</p>
+
+    <% if (error) { %>
+    <div class="gt-alert gt-alert-error" style="margin-bottom:1.25rem"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+    <% } %>
+
+    <form action="/login" method="POST" class="gt-login-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="gt-form-group">
+        <label><i class="fas fa-user"></i> Username</label>
+        <input type="text" name="username" required autofocus placeholder="admin">
+      </div>
+      <div class="gt-form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" name="password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+    </form>
+
+    <p style="text-align:center;margin-top:1.5rem;font-size:.8rem;color:var(--gt-gray)">
+      <a href="/" style="color:var(--gt-gray)"><i class="fas fa-arrow-left"></i> Back to GTimes</a>
+    </p>
+  </div>
+</body>
+</html>

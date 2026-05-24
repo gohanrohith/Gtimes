@@ -1,0 +1,74 @@
+<footer class="gt-footer">
+  <div class="gt-footer-top">
+    <div class="container">
+      <div class="gt-footer-grid">
+        <div>
+          <div class="gt-brand" style="font-size:1.6rem;margin-bottom:1rem">
+            <span class="gt-brand-g">G</span><span class="gt-brand-times">Times</span>
+          </div>
+          <p style="color:#aaa;font-size:.88rem;line-height:1.7;max-width:280px"><%= settings?.site_tagline || 'Your School. Your Stories.' %> — The student media platform of Greenwood High School.</p>
+          <div class="gt-footer-social">
+            <% if (settings?.facebook)  { %><a href="<%= settings.facebook %>"  target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a><% } %>
+            <% if (settings?.instagram) { %><a href="<%= settings.instagram %>" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a><% } %>
+            <% if (settings?.youtube)   { %><a href="<%= settings.youtube %>"   target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a><% } %>
+            <% if (settings?.twitter)   { %><a href="<%= settings.twitter %>"   target="_blank" rel="noopener"><i class="fab fa-x-twitter"></i></a><% } %>
+          </div>
+        </div>
+
+        <div>
+          <h4>Sections</h4>
+          <ul>
+            <li><a href="/articles">All News</a></li>
+            <li><a href="/events">Events</a></li>
+            <li><a href="/gallery">Gallery</a></li>
+            <li><a href="/videos">Videos</a></li>
+            <li><a href="/about">About GTimes</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Categories</h4>
+          <ul>
+            <% if (typeof categories !== 'undefined') { categories.slice(0,6).forEach(c => { %>
+            <li><a href="/category/<%= c.slug %>"><%= c.name %></a></li>
+            <% }) } %>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Newsletter</h4>
+          <p style="color:#aaa;font-size:.82rem;line-height:1.6;margin-bottom:.75rem">Get the latest stories delivered to your inbox.</p>
+          <% if (typeof newsletterMsg !== 'undefined' && newsletterMsg === 'success') { %>
+          <p style="color:var(--gt-lime,#B5D236);font-size:.82rem"><i class="fas fa-check-circle"></i> Subscribed! Thank you.</p>
+          <% } else { %>
+          <form action="/newsletter/subscribe" method="POST" style="display:flex;flex-direction:column;gap:.5rem">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="email" name="email" required placeholder="your@email.com" style="padding:.5rem .75rem;border-radius:6px;border:1px solid #333;background:#1a1a1a;color:#fff;font-family:inherit;font-size:.82rem">
+            <button type="submit" class="btn btn-primary btn-sm" style="justify-content:center"><i class="fas fa-paper-plane"></i> Subscribe</button>
+          </form>
+          <% } %>
+          <a href="/rss.xml" style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#aaa;margin-top:.75rem;text-decoration:none"><i class="fas fa-rss" style="color:orange"></i> RSS Feed</a>
+        </div>
+
+        <div>
+          <h4>Greenwood Network</h4>
+          <ul>
+            <li><a href="https://ghs.ac.in" target="_blank" rel="noopener">Greenwood High School</a></li>
+            <li><a href="https://hasanparthy.ghs.ac.in" target="_blank" rel="noopener">Hasanparthy Campus</a></li>
+            <li><a href="https://hunterroad.ghs.ac.in" target="_blank" rel="noopener">Hunter Road Campus</a></li>
+            <li><a href="https://naimnagar.ghs.ac.in" target="_blank" rel="noopener">Naimnagar Campus</a></li>
+            <li><a href="https://mancherial.ghs.ac.in" target="_blank" rel="noopener">Mancherial Campus</a></li>
+            <li><a href="https://gopalpur.ghs.ac.in" target="_blank" rel="noopener">Gopalpur Campus</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="gt-footer-bottom">
+    <div class="container">
+      <p>&copy; <%= currentYear %> GTimes — Greenwood High School Student Media. All rights reserved.</p>
+      <p style="font-size:.78rem;color:#666">A publication of <a href="https://ghs.ac.in" style="color:#B5D236">Greenwood High School Warangal</a></p>
+    </div>
+  </div>
+</footer>
+<%- include('./cookie-banner') %>

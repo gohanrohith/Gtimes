@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Videos</h1>
+    </div>
+
+    <% if (success) { %>
+    <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
+    <% } %>
+    <% if (error) { %>
+    <div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+    <% } %>
+
+    <!-- Add video -->
+    <div class="gt-admin-card" style="margin-bottom:1.5rem">
+      <h3 style="font-size:.9rem;font-weight:700;margin-bottom:1rem">Add YouTube Video</h3>
+      <form action="/videos/new" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="gt-form-group">
+            <label>Title *</label>
+            <input type="text" name="title" required placeholder="Video title">
+          </div>
+          <div class="gt-form-group">
+            <label>YouTube URL *</label>
+            <input type="url" name="youtube_url" required placeholder="https://www.youtube.com/watch?v=...">
+          </div>
+        </div>
+        <div class="gt-form-group">
+          <label>Description</label>
+          <textarea name="description" rows="2" placeholder="Brief description…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Video</button>
+      </form>
+    </div>
+
+    <!-- Videos list -->
+    <div class="gt-admin-card">
+      <% if (videos && videos.length > 0) { %>
+      <table class="gt-admin-table gt-admin-table-full">
+        <thead>
+          <tr>
+            <th style="width:100px">Thumbnail</th>
+            <th>Title</th>
+            <th>Added</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% videos.forEach(v => { %>
+          <tr>
+            <td>
+              <% if (v.youtube_id) { %>
+              <img src="https://img.youtube.com/vi/<%= v.youtube_id %>/mqdefault.jpg" style="width:90px;height:54px;object-fit:cover;border-radius:4px">
+              <% } else { %>
+              <div style="width:90px;height:54px;background:var(--gt-off);border-radius:4px;display:flex;align-items:center;justify-content:center"><i class="fas fa-film" style="color:#ccc"></i></div>
+              <% } %>
+            </td>
+            <td>
+              <div style="font-weight:600;font-size:.88rem"><%= v.title %></div>
+              <% if (v.description) { %><div style="font-size:.77rem;color:var(--gt-gray);margin-top:2px"><%= v.description.substring(0,80) %><%= v.description.length>80?'…':'' %></div><% } %>
+            </td>
+            <td style="font-size:.82rem;white-space:nowrap"><%= new Date(v.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+            <td style="text-align:right">
+              <% if (v.youtube_id) { %>
+              <a href="https://www.youtube.com/watch?v=<%= v.youtube_id %>" target="_blank" class="btn btn-xs btn-outline" title="Watch on YouTube"><i class="fab fa-youtube"></i></a>
+              <% } %>
+              <form action="/videos/<%= v.id %>/delete" method="POST" style="display:inline;margin-left:4px">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" title="Delete"><i class="fas fa-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+      <div class="gt-empty"><i class="fas fa-video"></i><p>No videos yet. Add one above.</p></div>
+      <% } %>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

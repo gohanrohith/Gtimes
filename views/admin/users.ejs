@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Admin Users</h1>
+      <a href="/users/new" class="btn btn-primary"><i class="fas fa-plus"></i> Add User</a>
+    </div>
+
+    <% if (success) { %>
+    <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> Saved.</div>
+    <% } %>
+
+    <div class="gt-admin-card">
+      <table class="gt-admin-table">
+        <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Joined</th><th></th></tr></thead>
+        <tbody>
+          <% users.forEach(u => { %>
+          <tr>
+            <td style="display:flex;align-items:center;gap:.6rem">
+              <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;background:var(--gt-green);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <% if (u.avatar) { %><img src="/uploads/avatars/<%= u.avatar %>" style="width:100%;height:100%;object-fit:cover"><% } else { %><i class="fas fa-user" style="color:#fff;font-size:.75rem"></i><% } %>
+              </div>
+              <%= u.name %>
+            </td>
+            <td style="color:var(--gt-gray)">@<%= u.username %></td>
+            <td><span class="gt-badge gt-badge-<%= u.role==='super'?'green':u.role==='editor'?'blue':'gray' %>"><%= u.role %></span></td>
+            <td><%= new Date(u.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+            <td>
+              <a href="/users/<%= u.id %>/edit" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>
+              <% if (u.id !== parseInt(adminId || 0)) { %>
+              <form method="POST" action="/users/<%= u.id %>/delete" style="display:inline" onsubmit="return confirm('Delete user <%= u.username %>? This cannot be undone.')">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

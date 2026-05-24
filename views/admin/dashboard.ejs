@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Dashboard</h1>
+    </div>
+
+    <!-- Stats -->
+    <div class="gt-stats-grid">
+      <div class="gt-stat-card">
+        <div class="gt-stat-icon" style="background:rgba(230,57,70,.1);color:var(--gt-red)"><i class="fas fa-newspaper"></i></div>
+        <div class="gt-stat-body">
+          <div class="gt-stat-num"><%= stats.articles %></div>
+          <div class="gt-stat-label">Published Articles</div>
+        </div>
+      </div>
+      <div class="gt-stat-card">
+        <div class="gt-stat-icon" style="background:rgba(0,102,58,.1);color:var(--gt-green)"><i class="fas fa-calendar-alt"></i></div>
+        <div class="gt-stat-body">
+          <div class="gt-stat-num"><%= stats.events %></div>
+          <div class="gt-stat-label">Events</div>
+        </div>
+      </div>
+      <div class="gt-stat-card">
+        <div class="gt-stat-icon" style="background:rgba(181,210,54,.15);color:#7a9b00"><i class="fas fa-images"></i></div>
+        <div class="gt-stat-body">
+          <div class="gt-stat-num"><%= stats.photos %></div>
+          <div class="gt-stat-label">Photos</div>
+        </div>
+      </div>
+      <div class="gt-stat-card">
+        <div class="gt-stat-icon" style="background:rgba(31,27,118,.1);color:var(--gt-navy)"><i class="fas fa-comments"></i></div>
+        <div class="gt-stat-body">
+          <div class="gt-stat-num"><%= stats.pending_comments %></div>
+          <div class="gt-stat-label">Pending Comments</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem">
+
+      <!-- Recent Articles -->
+      <div class="gt-admin-card">
+        <div class="gt-admin-card-header">
+          <h3>Recent Articles</h3>
+          <a href="/articles/new" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> New</a>
+        </div>
+        <% if (recentArticles && recentArticles.length > 0) { %>
+        <table class="gt-admin-table">
+          <tbody>
+            <% recentArticles.forEach(a => { %>
+            <tr>
+              <td>
+                <div style="font-weight:600;font-size:.88rem"><%= a.title.substring(0,50) %><%= a.title.length>50?'…':'' %></div>
+                <div style="font-size:.77rem;color:var(--gt-gray);margin-top:2px"><%= new Date(a.published_at||a.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></div>
+              </td>
+              <td style="text-align:right">
+                <span class="gt-badge <%= a.status === 'published' ? 'gt-badge-success' : 'gt-badge-warn' %>"><%= a.status %></span>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } else { %>
+        <p style="color:var(--gt-gray);font-size:.88rem;padding:.75rem 0">No articles yet.</p>
+        <% } %>
+        <div style="margin-top:.75rem"><a href="/articles" class="btn btn-sm btn-outline">View All Articles</a></div>
+      </div>
+
+      <!-- Pending Comments -->
+      <div class="gt-admin-card">
+        <div class="gt-admin-card-header">
+          <h3>Pending Comments</h3>
+          <% if (stats.pending_comments > 0) { %>
+          <span class="gt-badge gt-badge-warn"><%= stats.pending_comments %> pending</span>
+          <% } %>
+        </div>
+        <% if (pendingComments && pendingComments.length > 0) { %>
+        <table class="gt-admin-table">
+          <tbody>
+            <% pendingComments.forEach(c => { %>
+            <tr>
+              <td>
+                <div style="font-weight:600;font-size:.88rem"><%= c.name %></div>
+                <div style="font-size:.77rem;color:var(--gt-gray);margin-top:2px"><%= c.content.substring(0,60) %><%= c.content.length>60?'…':'' %></div>
+                <div style="font-size:.72rem;color:var(--gt-gray-lt);margin-top:2px">on: <%= c.article_title ? c.article_title.substring(0,40) : '' %></div>
+              </td>
+              <td style="text-align:right;white-space:nowrap">
+                <form action="/comments/<%= c.id %>/approve" method="POST" style="display:inline">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-xs btn-success" title="Approve"><i class="fas fa-check"></i></button>
+                </form>
+                <form action="/comments/<%= c.id %>/spam" method="POST" style="display:inline;margin-left:4px">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-xs btn-warn" title="Mark Spam"><i class="fas fa-ban"></i></button>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } else { %>
+        <p style="color:var(--gt-gray);font-size:.88rem;padding:.75rem 0">No pending comments.</p>
+        <% } %>
+        <div style="margin-top:.75rem"><a href="/comments" class="btn btn-sm btn-outline">Manage Comments</a></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

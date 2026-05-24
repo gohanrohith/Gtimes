@@ -1,0 +1,10 @@
+<div class="gt-admin-topbar">
+  <div class="gt-admin-topbar-left">
+    <button class="gt-sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <span class="gt-admin-page-title"><%= typeof title !== 'undefined' ? title.split(' | ')[0] : 'GTimes Admin' %></span>
+  </div>
+  <div class="gt-admin-topbar-right">
+    <a href="https://gtimes.in" target="_blank" class="gt-admin-topbar-link"><i class="fas fa-external-link-alt"></i> View Site</a>
+    <span class="gt-admin-user"><i class="fas fa-user-circle"></i> <%= adminName || 'Admin' %></span>
+  </div>
+</div>

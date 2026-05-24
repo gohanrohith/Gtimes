@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Events</h1>
+      <a href="/events/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Event</a>
+    </div>
+
+    <% if (success) { %>
+    <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
+    <% } %>
+
+    <div class="gt-admin-card" style="margin-top:1rem">
+      <% if (events && events.length > 0) { %>
+      <table class="gt-admin-table gt-admin-table-full">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% events.forEach(ev => { %>
+          <tr>
+            <td>
+              <div style="font-weight:600;font-size:.88rem"><%= ev.title.substring(0,55) %><%= ev.title.length>55?'…':'' %></div>
+              <% if (ev.campus) { %><div style="font-size:.75rem;color:var(--gt-gray);margin-top:2px"><i class="fas fa-map-marker-alt"></i> <%= ev.campus %></div><% } %>
+            </td>
+            <td style="font-size:.85rem;white-space:nowrap"><%= ev.event_date ? new Date(ev.event_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—' %></td>
+            <td style="font-size:.85rem"><%= ev.event_time || '—' %></td>
+            <td style="font-size:.85rem"><%= ev.location || '—' %></td>
+            <td><span class="gt-badge <%= ev.status==='upcoming'?'gt-badge-success':ev.status==='ongoing'?'gt-badge-warn':'gt-badge-muted' %>"><%= ev.status %></span></td>
+            <td style="text-align:right;white-space:nowrap">
+              <a href="/events/<%= ev.id %>/edit" class="btn btn-xs btn-outline" title="Edit"><i class="fas fa-pen"></i></a>
+              <form action="/events/<%= ev.id %>/delete" method="POST" style="display:inline;margin-left:4px">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" title="Delete"><i class="fas fa-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+      <div class="gt-empty"><i class="fas fa-calendar-alt"></i><p>No events yet. <a href="/events/new">Add one</a>.</p></div>
+      <% } %>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

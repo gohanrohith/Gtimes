@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<div class="gt-page-hero" style="padding:2rem 0 2.5rem">
+  <div class="container">
+    <h1>Search Results</h1>
+    <% if (q) { %><p>Showing results for "<strong><%= q %></strong>"</p><% } %>
+    <form action="/search" method="GET" style="margin-top:1rem;display:flex;gap:.5rem;max-width:480px">
+      <input type="text" name="q" value="<%= q||'' %>" placeholder="Search articles…" class="gt-search-input" style="flex:1;padding:.6rem 1rem;border-radius:var(--gt-radius);border:none;font-family:inherit;font-size:.95rem">
+      <button type="submit" class="btn btn-primary" style="padding:.6rem 1.25rem"><i class="fas fa-search"></i></button>
+    </form>
+  </div>
+</div>
+<main class="section">
+  <div class="container">
+    <% if (!q) { %>
+    <div class="gt-empty"><i class="fas fa-search"></i><p>Enter a search term above.</p></div>
+    <% } else if (results && results.length > 0) { %>
+    <p style="color:var(--gt-gray);margin-bottom:1.5rem"><%= results.length %> article<%= results.length!==1?'s':'' %> found</p>
+    <div class="gt-articles-grid">
+      <% results.forEach(a => { %>
+      <a href="/article/<%= a.slug %>" class="gt-article-card" style="text-decoration:none">
+        <div class="gt-card-image">
+          <% if (a.cover_image) { %><img src="/uploads/articles/<%= a.cover_image %>" alt="<%= a.title %>" loading="lazy"><% } else { %><div style="height:100%;display:flex;align-items:center;justify-content:center;background:var(--gt-off)"><i class="fas fa-newspaper" style="font-size:2rem;color:#ccc"></i></div><% } %>
+        </div>
+        <div class="gt-card-body">
+          <div class="gt-card-meta">
+            <% if (a.cat_name) { %><span class="gt-cat-badge" style="background:<%= a.cat_color||'#e63946' %>"><%= a.cat_name %></span><% } %>
+            <span class="gt-card-date"><%= new Date(a.published_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></span>
+          </div>
+          <h3><%= a.title %></h3>
+          <p><%= (a.excerpt||'').substring(0,100) %><%= (a.excerpt||'').length>100?'…':'' %></p>
+        </div>
+        <div class="gt-card-footer">
+          <span class="gt-read-more">Read More <i class="fas fa-arrow-right"></i></span>
+          <span class="gt-views"><i class="fas fa-eye"></i> <%= a.views %></span>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+    <% } else { %>
+    <div class="gt-empty"><i class="fas fa-search"></i><p>No articles found for "<%= q %>".</p></div>
+    <% } %>
+  </div>
+</main>
+<%- include('../partials/footer') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

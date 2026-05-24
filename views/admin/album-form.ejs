@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+
+    <% if (!album) { %>
+    <!-- New Album form -->
+    <div class="gt-admin-page-header">
+      <h1>New Album</h1>
+      <a href="/gallery" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <% if (errors && errors.length > 0) { %>
+    <div class="gt-alert gt-alert-error">
+      <ul style="margin:0;padding-left:1.2rem">
+        <% errors.forEach(e => { %><li><%= e.msg %></li><% }) %>
+      </ul>
+    </div>
+    <% } %>
+
+    <div class="gt-admin-card" style="max-width:560px">
+      <form action="/gallery/new" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="gt-form-group">
+          <label>Album Title *</label>
+          <input type="text" name="title" required placeholder="e.g. Annual Day 2025">
+        </div>
+        <div class="gt-form-group">
+          <label>Description</label>
+          <textarea name="description" rows="3" placeholder="Brief description…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Create Album</button>
+      </form>
+    </div>
+
+    <% } else { %>
+    <!-- Upload photos to existing album -->
+    <div class="gt-admin-page-header">
+      <h1>Upload Photos — <%= album.title %></h1>
+      <a href="/gallery" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to Gallery</a>
+    </div>
+
+    <% if (success) { %>
+    <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
+    <% } %>
+
+    <div class="gt-admin-card" style="max-width:640px;margin-bottom:2rem">
+      <form action="/gallery/<%= album.id %>/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="gt-form-group">
+          <label>Select Photos <span style="font-weight:400;color:var(--gt-gray)">(multiple allowed, max 5 MB each)</span></label>
+          <input type="file" name="photos" id="photoInput" accept="image/*" multiple class="gt-file-input">
+          <label for="photoInput" class="btn btn-outline" style="margin-top:.5rem;display:inline-flex"><i class="fas fa-images"></i> Choose Photos</label>
+        </div>
+        <div id="previewGrid" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem"></div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload</button>
+      </form>
+    </div>
+
+    <!-- Existing photos -->
+    <% if (photos && photos.length > 0) { %>
+    <h3 style="font-size:.95rem;font-weight:700;margin-bottom:1rem">Album Photos (<%= photos.length %>)</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem">
+      <% photos.forEach(photo => { %>
+      <div style="position:relative;border-radius:8px;overflow:hidden;background:var(--gt-off)">
+        <img src="/uploads/gallery/<%= photo.filename %>" style="width:100%;height:100px;object-fit:cover" loading="lazy">
+        <form action="/gallery/photo/<%= photo.id %>/delete" method="POST" style="position:absolute;top:4px;right:4px">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" style="padding:4px 6px" title="Delete photo"><i class="fas fa-times"></i></button>
+        </form>
+        <% if (photo.caption) { %><div style="padding:4px 6px;font-size:.7rem;background:rgba(0,0,0,.5);color:#fff"><%= photo.caption %></div><% } %>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+    <% } %>
+
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+<script>
+document.getElementById('photoInput')?.addEventListener('change', function() {
+  const grid = document.getElementById('previewGrid');
+  grid.innerHTML = '';
+  Array.from(this.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.cssText = 'width:80px;height:60px;object-fit:cover;border-radius:4px;border:2px solid var(--gt-lime)';
+      grid.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+});
+</script>
+</body>
+</html>
