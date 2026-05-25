@@ -59,23 +59,33 @@ exports.home = async (req, res) => {
 // ── Articles listing ─────────────────────────────────────
 exports.articles = async (req, res) => {
   const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
-  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const page    = Math.max(1, parseInt(req.query.page) || 1);
   const perPage = parseInt(settings.articles_per_page) || 12;
-  const offset = (page - 1) * perPage;
+  const offset  = (page - 1) * perPage;
+  const year    = req.query.year ? parseInt(req.query.year) : null;
 
-  const [count, articles] = await Promise.all([
-    q1('SELECT COUNT(*) AS c FROM articles WHERE status=?', ['published']),
+  const yearFilter = year ? ' AND YEAR(a.published_at) = ?' : '';
+  const params     = year ? [perPage, offset, year] : [perPage, offset];
+  const countParams = year ? ['published', year] : ['published'];
+
+  const [count, articles, availableYears] = await Promise.all([
+    q1(`SELECT COUNT(*) AS c FROM articles a WHERE a.status=?${year ? ' AND YEAR(a.published_at)=?' : ''}`, countParams),
     q(`SELECT a.*, c.name AS cat_name, c.slug AS cat_slug, c.color AS cat_color
        FROM articles a LEFT JOIN categories c ON a.category_id = c.id
-       WHERE a.status='published'
-       ORDER BY a.published_at DESC LIMIT ? OFFSET ?`, [perPage, offset]),
+       WHERE a.status='published'${yearFilter}
+       ORDER BY a.published_at DESC LIMIT ? OFFSET ?`, params),
+    q(`SELECT YEAR(published_at) AS yr, COUNT(*) AS cnt
+       FROM articles WHERE status='published'
+       GROUP BY yr ORDER BY yr DESC`),
   ]);
 
   const total = count?.c || 0;
   res.render('main/articles', {
-    title: `All Articles | ${settings.site_name || 'GTimes'}`,
+    title: year ? `${year} Archive | ${settings.site_name || 'GTimes'}` : `All Articles | ${settings.site_name || 'GTimes'}`,
     settings, categories, articles: withReadingTime(articles),
     pagination: { page, perPage, total, totalPages: Math.ceil(total / perPage) },
+    activeYear: year,
+    availableYears,
   });
 };
 

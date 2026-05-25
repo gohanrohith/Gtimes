@@ -292,6 +292,12 @@ img { max-width: 100%; display: block; }
 .gt-event-badge.ongoing  { background: #fef3c7; color: #92400e; }
 .gt-event-badge.completed { background: var(--gt-light); color: var(--gt-gray); }
 
+/* ── Year Archive Pills ──────────────────────────────── */
+.gt-year-pill { display: inline-flex; align-items: center; gap: .3rem; padding: .28rem .7rem; border-radius: 20px; border: 1px solid var(--gt-border); font-size: .78rem; font-weight: 600; color: #555; background: var(--gt-white); transition: all .15s; }
+.gt-year-pill:hover { border-color: var(--gt-red); color: var(--gt-red); text-decoration: none; }
+.gt-year-pill.active { background: var(--gt-red); color: var(--gt-white); border-color: var(--gt-red); }
+.gt-year-count { font-size: .7rem; font-weight: 400; opacity: .75; }
+
 /* ── Pagination ──────────────────────────────────────── */
 .gt-pagination { display: flex; justify-content: center; gap: .5rem; margin-top: 2.5rem; }
 .gt-pagination a, .gt-pagination span {
