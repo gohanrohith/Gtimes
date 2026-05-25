@@ -49,8 +49,12 @@ img { max-width: 100%; display: block; }
   font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px;
   display: flex; align-items: center; flex-shrink: 0;
 }
+.gt-brand-logo { height: 36px; width: auto; display: block; }
 .gt-brand-g     { color: var(--gt-red); }
 .gt-brand-times { color: var(--gt-white); }
+.gt-footer-brand-lockup { display: flex; align-items: center; gap: 0; margin-bottom: 1rem; }
+.gt-footer-emblem { height: 44px; width: 44px; object-fit: contain; flex-shrink: 0; }
+.gt-footer-brand-logo { height: 44px; width: auto; display: block; }
 
 .gt-nav-menu {
   display: flex; align-items: center; gap: .25rem;

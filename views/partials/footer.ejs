@@ -3,8 +3,12 @@
     <div class="container">
       <div class="gt-footer-grid">
         <div>
-          <div class="gt-brand" style="font-size:1.6rem;margin-bottom:1rem">
-            <span class="gt-brand-g">G</span><span class="gt-brand-times">Times</span>
+          <div class="gt-footer-brand-lockup">
+            <img src="/emblem.png" alt="" class="gt-footer-emblem"
+                 onerror="this.style.display='none'">
+            <img src="/GTIMES-PNG.png" alt="GTimes" class="gt-footer-brand-logo"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'">
+            <span class="gt-brand-fallback" style="display:none"><span class="gt-brand-g">G</span><span class="gt-brand-times">Times</span></span>
           </div>
           <p style="color:#aaa;font-size:.88rem;line-height:1.7;max-width:280px"><%= settings?.site_tagline || 'Your School. Your Stories.' %> — The student media platform of Greenwood High School.</p>
           <div class="gt-footer-social">
@@ -54,11 +58,11 @@
           <h4>Greenwood Network</h4>
           <ul>
             <li><a href="https://ghs.ac.in" target="_blank" rel="noopener">Greenwood High School</a></li>
-            <li><a href="https://hasanparthy.ghs.ac.in" target="_blank" rel="noopener">Hasanparthy Campus</a></li>
-            <li><a href="https://hunterroad.ghs.ac.in" target="_blank" rel="noopener">Hunter Road Campus</a></li>
-            <li><a href="https://naimnagar.ghs.ac.in" target="_blank" rel="noopener">Naimnagar Campus</a></li>
-            <li><a href="https://mancherial.ghs.ac.in" target="_blank" rel="noopener">Mancherial Campus</a></li>
-            <li><a href="https://gopalpur.ghs.ac.in" target="_blank" rel="noopener">Gopalpur Campus</a></li>
+            <li><a href="https://ghs.ac.in/hasanparthy" target="_blank" rel="noopener">Hasanparthy Campus</a></li>
+            <li><a href="https://ghs.ac.in/hunterroad" target="_blank" rel="noopener">Hunter Road Campus</a></li>
+            <li><a href="https://ghs.ac.in/naimnagar" target="_blank" rel="noopener">Naimnagar Campus</a></li>
+            <li><a href="https://ghs.ac.in/mancherial" target="_blank" rel="noopener">Mancherial Campus</a></li>
+            <li><a href="https://ghs.ac.in/gopalpur" target="_blank" rel="noopener">Gopalpur Campus</a></li>
           </ul>
         </div>
       </div>
