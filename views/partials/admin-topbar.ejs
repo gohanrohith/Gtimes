@@ -4,7 +4,66 @@
     <span class="gt-admin-page-title"><%= typeof title !== 'undefined' ? title.split(' | ')[0] : 'GTimes Admin' %></span>
   </div>
   <div class="gt-admin-topbar-right">
+    <span id="adminSessionTimer" style="font-size:.72rem;color:#aaa;margin-right:.5rem"></span>
     <a href="https://gtimes.in" target="_blank" class="gt-admin-topbar-link"><i class="fas fa-external-link-alt"></i> View Site</a>
     <span class="gt-admin-user"><i class="fas fa-user-circle"></i> <%= adminName || 'Admin' %></span>
   </div>
 </div>
+<div id="adminLogoutWarning" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#c0392b;color:#fff;text-align:center;padding:.75rem 1rem;font-size:.9rem;font-weight:600">
+  Session expiring in <span id="adminCountdown">60</span>s due to inactivity — <a href="#" onclick="adminResetTimer();return false;" style="color:#fff;text-decoration:underline">Stay logged in</a> &nbsp;|&nbsp; <a href="/admin/logout" style="color:#fff;text-decoration:underline">Logout now</a>
+</div>
+<script>
+(function(){
+  var TIMEOUT = 15 * 60 * 1000;
+  var WARN_BEFORE = 60 * 1000;
+  var timer, warnTimer, countdownInterval;
+  var warningEl = document.getElementById('adminLogoutWarning');
+  var countdownEl = document.getElementById('adminCountdown');
+  var timerLabel = document.getElementById('adminSessionTimer');
+
+  function formatMins(ms) {
+    var m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function showWarning() {
+    warningEl.style.display = 'block';
+    var secs = Math.floor(WARN_BEFORE / 1000);
+    countdownEl.textContent = secs;
+    countdownInterval = setInterval(function(){
+      secs--;
+      countdownEl.textContent = secs;
+      if (secs <= 0) { clearInterval(countdownInterval); window.location.href = '/admin/logout'; }
+    }, 1000);
+  }
+
+  function hideWarning() {
+    warningEl.style.display = 'none';
+    clearInterval(countdownInterval);
+  }
+
+  window.adminResetTimer = function() {
+    clearTimeout(timer);
+    clearTimeout(warnTimer);
+    hideWarning();
+    fetch('/admin/keepalive');
+    var deadline = Date.now() + TIMEOUT;
+    if (timerLabel) {
+      clearInterval(window._timerLabelInterval);
+      window._timerLabelInterval = setInterval(function(){
+        var left = deadline - Date.now();
+        if (left <= 0) { timerLabel.textContent = ''; return; }
+        timerLabel.textContent = 'Session: ' + formatMins(left);
+      }, 1000);
+    }
+    warnTimer = setTimeout(showWarning, TIMEOUT - WARN_BEFORE);
+    timer = setTimeout(function(){ window.location.href = '/admin/logout'; }, TIMEOUT);
+  };
+
+  ['mousemove','keydown','click','scroll','touchstart'].forEach(function(e){
+    document.addEventListener(e, adminResetTimer, { passive: true });
+  });
+
+  adminResetTimer();
+})();
+</script>
