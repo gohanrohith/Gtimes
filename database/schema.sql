@@ -181,6 +181,17 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
 -- ALTER TABLE admins ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT NULL AFTER name;
 -- ALTER TABLE admins ADD COLUMN IF NOT EXISTS avatar VARCHAR(300) DEFAULT NULL AFTER bio;
 
+-- Google Reviews cache
+CREATE TABLE IF NOT EXISTS google_reviews (
+  id               INT AUTO_INCREMENT PRIMARY KEY,
+  author_name      VARCHAR(200) NOT NULL,
+  rating           TINYINT NOT NULL DEFAULT 5,
+  review_text      TEXT NOT NULL,
+  profile_photo_url VARCHAR(500) DEFAULT NULL,
+  source_id        VARCHAR(200) NOT NULL UNIQUE,
+  synced_at        DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Default settings
 INSERT IGNORE INTO settings (setting_key, value) VALUES
   ('site_name',        'GTimes'),

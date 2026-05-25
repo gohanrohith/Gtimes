@@ -3,6 +3,7 @@ const path    = require('path');
 const fs      = require('fs');
 const multer  = require('multer');
 const https   = require('https');
+const { syncGoogleReviews } = require('../services/googleReviews');
 const { query, queryOne } = require('../config/db');
 const { slugify }         = require('../utils/slug');
 const { isValidImage }    = require('../utils/magicBytes');
@@ -476,9 +477,32 @@ exports.settings = async (req, res) => {
   });
 };
 
+exports.syncGoogleReviews = async (req, res) => {
+  try {
+    const settingsRows = await q('SELECT setting_key, value FROM settings WHERE setting_key IN (?,?)',
+      ['google_place_id', 'google_places_api_key']);
+    const sm = {};
+    settingsRows.forEach(s => { sm[s.setting_key] = s.value; });
+    if (!sm.google_place_id || !sm.google_places_api_key) {
+      return res.redirect('/settings?error=Set+Google+Place+ID+and+API+Key+first');
+    }
+    const result = await syncGoogleReviews(sm.google_place_id, sm.google_places_api_key, q);
+    if (result.overallRating) {
+      await q('INSERT INTO settings (setting_key,value) VALUES (?,?) ON DUPLICATE KEY UPDATE value=?',
+        ['google_overall_rating', String(result.overallRating), String(result.overallRating)]);
+      await q('INSERT INTO settings (setting_key,value) VALUES (?,?) ON DUPLICATE KEY UPDATE value=?',
+        ['google_total_ratings', String(result.totalRatings), String(result.totalRatings)]);
+    }
+    res.redirect(`/settings?success=Synced+${result.synced}+new+reviews`);
+  } catch (err) {
+    res.redirect(`/settings?error=${encodeURIComponent(err.message)}`);
+  }
+};
+
 exports.saveSettings = async (req, res) => {
   const { site_name, site_tagline, contact_email,
           facebook_url, instagram_url, youtube_url, breaking_news,
+          google_place_id, google_places_api_key,
           comments_enabled, comments_moderation,
           current_password, new_password, confirm_password } = req.body;
 
@@ -488,6 +512,8 @@ exports.saveSettings = async (req, res) => {
     breaking_news: breaking_news || '',
     comments_enabled: comments_enabled ? '1' : '0',
     comments_moderation: comments_moderation ? '1' : '0',
+    google_place_id: google_place_id || '',
+    google_places_api_key: google_places_api_key || '',
   };
   for (const [k, v] of Object.entries(kvPairs)) {
     if (v !== undefined) {

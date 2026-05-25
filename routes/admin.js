@@ -70,8 +70,9 @@ router.post('/users/:id/edit',   requireSuper, ctrl.updateUser);
 router.post('/users/:id/delete', requireSuper, ctrl.deleteUser);
 
 // Settings
-router.get('/settings',  ctrl.settings);
-router.post('/settings', ctrl.saveSettings);
+router.get('/settings',              ctrl.settings);
+router.post('/settings',             ctrl.saveSettings);
+router.post('/google-reviews/sync',  ctrl.syncGoogleReviews);
 
 // Own profile (bio/avatar)
 router.get('/profile',   ctrl.profileForm);

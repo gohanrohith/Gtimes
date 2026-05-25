@@ -280,10 +280,14 @@ exports.videos = async (req, res) => {
 
 // ── About ────────────────────────────────────────────────
 exports.about = async (req, res) => {
-  const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
+  const [settings, categories, reviews] = await Promise.all([
+    getSettings(),
+    getCategories(),
+    q('SELECT * FROM google_reviews ORDER BY synced_at DESC LIMIT 6'),
+  ]);
   res.render('main/about', {
     title: `About | ${settings.site_name || 'GTimes'}`,
-    settings, categories,
+    settings, categories, reviews,
   });
 };
 
