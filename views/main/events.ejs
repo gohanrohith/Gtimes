@@ -33,7 +33,7 @@
       <% upcoming.forEach(ev => { %>
       <div class="gt-event-card">
         <div class="gt-event-cover">
-          <% if (ev.cover_image) { %><img src="/uploads/events/<%= ev.cover_image %>" alt="<%= ev.title %>"><% } else { %><div class="gt-event-cover-placeholder"><i class="fas fa-calendar-star"></i></div><% } %>
+          <% if (ev.cover_image) { %><img src="/uploads/events/<%= ev.cover_image %>" alt="<%= ev.title %>" onerror="this.style.display='none'"><% } %><div class="gt-event-cover-placeholder" style="<%= ev.cover_image ? 'display:none' : '' %>"><i class="fas fa-calendar-star"></i></div>
         </div>
         <div class="gt-event-card-body">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
@@ -56,7 +56,7 @@
       <% past.forEach(ev => { %>
       <div class="gt-event-card" style="opacity:.8">
         <div class="gt-event-cover">
-          <% if (ev.cover_image) { %><img src="/uploads/events/<%= ev.cover_image %>" alt="<%= ev.title %>"><% } else { %><div class="gt-event-cover-placeholder"><i class="fas fa-calendar-check"></i></div><% } %>
+          <% if (ev.cover_image) { %><img src="/uploads/events/<%= ev.cover_image %>" alt="<%= ev.title %>" onerror="this.style.display='none'"><% } %><div class="gt-event-cover-placeholder" style="<%= ev.cover_image ? 'display:none' : '' %>"><i class="fas fa-calendar-check"></i></div>
         </div>
         <div class="gt-event-card-body">
           <div class="gt-event-card-date"><%= ev.event_date ? new Date(ev.event_date).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : 'Completed' %></div>
