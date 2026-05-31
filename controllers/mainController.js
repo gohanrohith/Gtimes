@@ -67,6 +67,7 @@ exports.home = async (req, res) => {
     featured: featuredArr[0] ? { ...featuredArr[0], reading_time: readingTime(featuredArr[0].content) } : null,
     latest: withReadingTime(latest),
     events, videos, trending,
+  });
 };
 
 // ── Articles listing ─────────────────────────────────────
