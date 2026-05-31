@@ -35,6 +35,7 @@ router.get('/tags',             ctrl.tagsList);
 router.post('/tags/:id/delete', ctrl.deleteTag);
 
 // Articles
+router.post('/articles/upload-image', ctrl.uploadArticleImage);
 router.get('/articles',               ctrl.articlesList);
 router.get('/articles/new',           ctrl.articleForm);
 router.post('/articles/new',          ctrl.createArticle);

@@ -37,9 +37,10 @@ function multiImageUpload(dest, maxCount = 20) {
     .array('images', maxCount);
 }
 
-const articleUpload = singleImageUpload('articles', 'cover_image');
-const galleryUpload = multer({ storage: makeStorage('gallery'), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: imgFilter }).array('photos', 20);
-const eventUpload   = singleImageUpload('events', 'cover_image');
+const articleUpload    = singleImageUpload('articles', 'cover_image');
+const articleImgUpload = multer({ storage: makeStorage('articles'), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: imgFilter }).single('image');
+const galleryUpload    = multer({ storage: makeStorage('gallery'), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: imgFilter }).array('photos', 20);
+const eventUpload      = singleImageUpload('events', 'cover_image');
 
 // ── DB helpers ─────────────────────────────────────────
 async function q(sql, params = []) {
@@ -184,6 +185,19 @@ exports.articlesList = async (req, res) => {
     pagination: { page, totalPages },
     admin: { username: req.session.adminName },
     error: req.query.error || null,
+  });
+};
+
+exports.uploadArticleImage = (req, res) => {
+  articleImgUpload(req, res, err => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: 'No file received' });
+    const fp = path.join(__dirname, '../public/uploads/articles', req.file.filename);
+    if (!isValidImage(fp)) {
+      fs.unlinkSync(fp);
+      return res.status(400).json({ error: 'Invalid image file' });
+    }
+    res.json({ url: `/uploads/articles/${req.file.filename}` });
   });
 };
 

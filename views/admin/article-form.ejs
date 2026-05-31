@@ -210,9 +210,36 @@ const toolbarOptions = [
   el.style.cssText = 'display:block;position:absolute;visibility:hidden;pointer-events:none';
 });
 
+function makeImageHandler(quill) {
+  return function() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files[0];
+      if (!file) return;
+      const fd = new FormData(); fd.append('image', file);
+      fetch('/admin/articles/upload-image', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+          if (data.url) {
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, 'image', data.url);
+            quill.setSelection(range.index + 1);
+          } else { alert(data.error || 'Upload failed'); }
+        })
+        .catch(() => alert('Image upload failed'));
+    };
+    input.click();
+  };
+}
+
 const quillEn = new Quill('#quillEn', { theme: 'snow', modules: { toolbar: toolbarOptions } });
 const quillHi = new Quill('#quillHi', { theme: 'snow', modules: { toolbar: toolbarOptions } });
 const quillTe = new Quill('#quillTe', { theme: 'snow', modules: { toolbar: toolbarOptions } });
+
+quillEn.getModule('toolbar').addHandler('image', makeImageHandler(quillEn));
+quillHi.getModule('toolbar').addHandler('image', makeImageHandler(quillHi));
+quillTe.getModule('toolbar').addHandler('image', makeImageHandler(quillTe));
 
 // Restore hidden state
 ['tab-hi', 'tab-te'].forEach(id => {
