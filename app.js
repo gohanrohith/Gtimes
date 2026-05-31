@@ -64,8 +64,10 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3001;
+const DOMAIN = process.env.MAIN_DOMAIN || 'localhost';
+const base = process.env.NODE_ENV === 'production' ? `https://${DOMAIN}` : `http://localhost:${PORT}`;
 app.listen(PORT, () => {
   console.log(`\n  GTimes running at:`);
-  console.log(`  Main  →  http://lvh.me:${PORT}`);
-  console.log(`  Admin →  http://admin.lvh.me:${PORT}\n`);
+  console.log(`  Main  →  ${base}`);
+  console.log(`  Admin →  ${base}/admin\n`);
 });
