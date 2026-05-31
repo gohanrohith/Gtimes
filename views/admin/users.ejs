@@ -31,7 +31,7 @@
           <tr>
             <td style="display:flex;align-items:center;gap:.6rem">
               <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;background:var(--gt-green);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <% if (u.avatar) { %><img src="/uploads/avatars/<%= u.avatar %>" style="width:100%;height:100%;object-fit:cover"><% } else { %><i class="fas fa-user" style="color:#fff;font-size:.75rem"></i><% } %>
+                <% if (u.avatar) { %><img src="/uploads/avatars/<%= u.avatar %>" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'"><% } else { %><i class="fas fa-user" style="color:#fff;font-size:.75rem"></i><% } %>
               </div>
               <%= u.name %>
             </td>

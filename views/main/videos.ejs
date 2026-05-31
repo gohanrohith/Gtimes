@@ -33,7 +33,7 @@
       <div class="gt-video-card">
         <div class="gt-video-thumb" data-youtube="<%= v.youtube_id %>">
           <% if (v.youtube_id) { %>
-          <img src="https://img.youtube.com/vi/<%= v.youtube_id %>/hqdefault.jpg" alt="<%= v.title %>" loading="lazy">
+          <img src="https://img.youtube.com/vi/<%= v.youtube_id %>/hqdefault.jpg" alt="<%= v.title %>" loading="lazy" onerror="this.style.display='none'">
           <% } else { %>
           <div class="gt-video-placeholder"><i class="fas fa-film"></i></div>
           <% } %>

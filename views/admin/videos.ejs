@@ -78,7 +78,7 @@
           <tr>
             <td>
               <% if (v.youtube_id) { %>
-              <img src="https://img.youtube.com/vi/<%= v.youtube_id %>/mqdefault.jpg" style="width:90px;height:54px;object-fit:cover;border-radius:4px">
+              <img src="https://img.youtube.com/vi/<%= v.youtube_id %>/mqdefault.jpg" style="width:90px;height:54px;object-fit:cover;border-radius:4px" onerror="this.style.display='none'">
               <% } else { %>
               <div style="width:90px;height:54px;background:var(--gt-off);border-radius:4px;display:flex;align-items:center;justify-content:center"><i class="fas fa-film" style="color:#ccc"></i></div>
               <% } %>

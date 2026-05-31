@@ -486,7 +486,7 @@ exports.deletePhoto = async (req, res) => {
 // ── Videos ────────────────────────────────────────────
 exports.videosList = async (req, res) => {
   const videos = await q('SELECT * FROM videos ORDER BY created_at DESC');
-  res.render('admin/videos', { title: 'Videos | GTimes Admin', videos });
+  res.render('admin/videos', { title: 'Videos | GTimes Admin', videos, success: req.query.success || null, error: req.query.error || null });
 };
 
 exports.createVideo = async (req, res) => {
@@ -525,7 +525,7 @@ exports.commentsList = async (req, res) => {
 
 exports.approveComment = async (req, res) => {
   await q(`UPDATE comments SET status='approved' WHERE id=?`, [req.params.id]);
-  res.redirect('/comments?status=pending');
+  res.redirect('/admin/comments?status=pending');
 };
 
 exports.spamComment = async (req, res) => {
@@ -565,9 +565,9 @@ exports.syncGoogleReviews = async (req, res) => {
       await q('INSERT INTO settings (setting_key,value) VALUES (?,?) ON DUPLICATE KEY UPDATE value=?',
         ['google_total_ratings', String(result.totalRatings), String(result.totalRatings)]);
     }
-    res.redirect(`/settings?success=Synced+${result.synced}+new+reviews`);
+    res.redirect(`/admin/settings?success=Synced+${result.synced}+new+reviews`);
   } catch (err) {
-    res.redirect(`/settings?error=${encodeURIComponent(err.message)}`);
+    res.redirect(`/admin/settings?error=${encodeURIComponent(err.message)}`);
   }
 };
 
@@ -807,7 +807,7 @@ exports.categoryForm = (req, res) => {
 
 exports.createCategory = async (req, res) => {
   const { name, description, color, sort_order } = req.body;
-  if (!name) return res.redirect('/categories/new?error=Name+is+required');
+  if (!name) return res.redirect('/admin/categories/new?error=Name+is+required');
   const slug = await makeSlug(name, 'categories');
   await q('INSERT INTO categories (name, slug, description, color, sort_order) VALUES (?,?,?,?,?)',
     [name.trim(), slug, description || null, color || '#00663A', parseInt(sort_order) || 0]);
