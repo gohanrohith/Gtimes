@@ -122,7 +122,7 @@
 
         <% if (article.cover_image) { %>
         <div class="gt-article-cover">
-          <img src="/uploads/articles/<%= article.cover_image %>" alt="<%= article.title %>">
+          <img src="/uploads/articles/<%= article.cover_image %>" alt="<%= article.title %>" onerror="this.closest('.gt-article-cover').style.display='none'">
         </div>
         <% } %>
 
@@ -239,7 +239,7 @@
           <% related.forEach(r => { %>
           <a href="/article/<%= r.slug %>" class="gt-sidebar-article" style="text-decoration:none;display:flex;gap:.75rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--gt-light)">
             <div class="gt-sidebar-thumb">
-              <% if (r.cover_image) { %><img src="/uploads/articles/<%= r.cover_image %>" alt="<%= r.title %>"><% } %>
+              <% if (r.cover_image) { %><img src="/uploads/articles/<%= r.cover_image %>" alt="<%= r.title %>" onerror="this.style.display='none'"><% } %>
             </div>
             <div>
               <h5 style="font-size:.82rem;font-weight:600;color:var(--gt-dark);line-height:1.4"><%= r.title %></h5>

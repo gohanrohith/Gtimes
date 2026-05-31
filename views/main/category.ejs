@@ -26,7 +26,7 @@
       <% articles.forEach(a => { %>
       <a href="/article/<%= a.slug %>" class="gt-article-card" style="text-decoration:none">
         <div class="gt-card-image">
-          <% if (a.cover_image) { %><img src="/uploads/articles/<%= a.cover_image %>" alt="<%= a.title %>" loading="lazy"><% } else { %><div style="height:100%;display:flex;align-items:center;justify-content:center;background:var(--gt-off)"><i class="fas fa-newspaper" style="font-size:2rem;color:#ccc"></i></div><% } %>
+          <% if (a.cover_image) { %><img src="/uploads/articles/<%= a.cover_image %>" alt="<%= a.title %>" loading="lazy" onerror="this.style.display='none'"><% } %><div style="<%= a.cover_image ? 'display:none;' : '' %>height:100%;display:flex;align-items:center;justify-content:center;background:var(--gt-off)"><i class="fas fa-newspaper" style="font-size:2rem;color:#ccc"></i></div>
         </div>
         <div class="gt-card-body">
           <div class="gt-card-meta">

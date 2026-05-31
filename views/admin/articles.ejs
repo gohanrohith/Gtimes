@@ -58,7 +58,7 @@
           <tr>
             <td>
               <% if (a.cover_image) { %>
-              <div style="width:36px;height:36px;border-radius:4px;overflow:hidden;background:var(--gt-off)"><img src="/uploads/articles/<%= a.cover_image %>" style="width:100%;height:100%;object-fit:cover"></div>
+              <div style="width:36px;height:36px;border-radius:4px;overflow:hidden;background:var(--gt-off)"><img src="/uploads/articles/<%= a.cover_image %>" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'"></div>
               <% } else { %>
               <div style="width:36px;height:36px;border-radius:4px;background:var(--gt-off);display:flex;align-items:center;justify-content:center"><i class="fas fa-newspaper" style="color:#ccc;font-size:.75rem"></i></div>
               <% } %>

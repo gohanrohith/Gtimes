@@ -94,6 +94,19 @@ router.post('/users/:id/delete', requireSuper, ctrl.deleteUser);
 // Session keepalive (auto-logout heartbeat)
 router.get('/keepalive', (req, res) => { req.session.touch(); res.sendStatus(204); });
 
+// Debug: list files in uploads/articles so we can verify uploads land on disk
+router.get('/debug-uploads', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const dir = path.join(__dirname, '../public/uploads/articles');
+  try {
+    const files = fs.readdirSync(dir);
+    res.json({ dir, count: files.length, files: files.slice(-20) });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
+});
+
 // Settings
 router.get('/settings',              ctrl.settings);
 router.post('/settings',             ctrl.saveSettings);
