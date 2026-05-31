@@ -406,10 +406,19 @@ exports.deleteEvent = async (req, res) => {
 
 // ── Gallery ────────────────────────────────────────────
 exports.galleryList = async (req, res) => {
-  const albums = await q(`SELECT ga.*, COUNT(gp.id) AS photo_count
-    FROM gallery_albums ga LEFT JOIN gallery_photos gp ON gp.album_id=ga.id
-    WHERE ga.is_active=1 GROUP BY ga.id ORDER BY ga.created_at DESC`);
-  res.render('admin/gallery', { title: 'Gallery | GTimes Admin', albums });
+  const campus = req.query.campus || '';
+  const campusFilter = campus ? ' AND (ga.campus=? OR ga.campus="all")' : '';
+  const albums = await q(
+    `SELECT ga.*, COUNT(gp.id) AS photo_count
+     FROM gallery_albums ga LEFT JOIN gallery_photos gp ON gp.album_id=ga.id
+     WHERE ga.is_active=1${campusFilter} GROUP BY ga.id ORDER BY ga.created_at DESC`,
+    campus ? [campus] : []
+  );
+  res.render('admin/gallery', {
+    title: 'Gallery | GTimes Admin', albums,
+    activeCampus: campus,
+    success: req.query.success || null,
+  });
 };
 
 exports.albumForm = (req, res) => {
