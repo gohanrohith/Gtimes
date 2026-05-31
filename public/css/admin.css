@@ -231,6 +231,12 @@ ul   { list-style: none; }
 .gt-admin-album-info h4 { font-size: .88rem; font-weight: 700; margin-bottom: .25rem; }
 .gt-admin-album-info p  { font-size: .78rem; color: var(--gt-gray); }
 
+/* ── Quill editor overflow fix ───────────────────────── */
+.ql-toolbar { flex-wrap: wrap !important; }
+.ql-toolbar, .ql-container { max-width: 100%; box-sizing: border-box; }
+.ql-editor { word-break: break-word; overflow-x: hidden; }
+.ql-editor img { max-width: 100%; height: auto; }
+
 /* ── File input ──────────────────────────────────────── */
 .gt-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
