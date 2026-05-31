@@ -338,7 +338,7 @@ exports.deleteArticle = async (req, res) => {
 // ── Events ─────────────────────────────────────────────
 exports.eventsList = async (req, res) => {
   const campus = req.query.campus || '';
-  const campusFilter = campus ? ' AND (campus=? OR campus IS NULL OR campus="")' : '';
+  const campusFilter = campus ? ' AND (campus=? OR campus="all" OR campus IS NULL)' : '';
   const events = await q(
     `SELECT * FROM events${campusFilter ? ' WHERE 1=1' + campusFilter : ''} ORDER BY event_date DESC`,
     campus ? [campus] : []
