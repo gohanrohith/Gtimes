@@ -251,7 +251,9 @@
         <% } %>
 
         <div style="background:var(--gt-dark);color:var(--gt-white);border-radius:var(--gt-radius-lg);padding:1.5rem;margin-top:1.5rem">
-          <div style="font-size:1.2rem;font-weight:800;margin-bottom:.5rem"><span style="color:var(--gt-red)">G</span>Times</div>
+          <img src="/GTIMES-PNG.png" alt="GTimes" style="height:36px;width:auto;display:block;margin-bottom:.75rem"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          <div style="display:none;font-size:1.2rem;font-weight:800;margin-bottom:.5rem"><span style="color:var(--gt-red)">G</span>Times</div>
           <p style="font-size:.85rem;color:#aaa;line-height:1.6"><%= settings?.site_tagline || 'Your School. Your Stories.' %></p>
         </div>
       </aside>
