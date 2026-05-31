@@ -70,11 +70,17 @@
 
           <!-- Language tabs -->
           <div class="gt-admin-card">
-            <div class="gt-lang-tabs">
-              <button type="button" class="gt-lang-tab active" data-target="tab-en">English</button>
-              <button type="button" class="gt-lang-tab"        data-target="tab-hi">हिंदी</button>
-              <button type="button" class="gt-lang-tab"        data-target="tab-te">తెలుగు</button>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
+              <div class="gt-lang-tabs" style="border-bottom:none;padding-bottom:0;flex:1">
+                <button type="button" class="gt-lang-tab active" data-target="tab-en">English</button>
+                <button type="button" class="gt-lang-tab"        data-target="tab-hi">हिंदी</button>
+                <button type="button" class="gt-lang-tab"        data-target="tab-te">తెలుగు</button>
+              </div>
+              <button type="button" id="insertGalleryBtn" class="btn btn-sm btn-outline" style="flex-shrink:0;margin-left:.75rem">
+                <i class="fas fa-images"></i> Insert Gallery
+              </button>
             </div>
+            <div style="border-top:2px solid var(--gt-light,#e8e8e8);margin-bottom:0"></div>
 
             <div id="tab-en" class="gt-lang-panel">
               <div id="quillEn" style="min-height:380px;background:#fff"><%= article?.content||'' %></div>
@@ -278,6 +284,85 @@ document.getElementById('coverInput')?.addEventListener('change', function() {
   };
   reader.readAsDataURL(file);
 });
+</script>
+
+<!-- Gallery picker modal -->
+<div id="galleryModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;max-width:680px;width:92%;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid #e9ecef">
+      <h3 style="font-size:1rem;font-weight:700;margin:0"><i class="fas fa-images" style="color:var(--gt-green)"></i> Select Gallery Album</h3>
+      <button id="galleryModalClose" type="button" style="background:none;border:none;font-size:1.25rem;cursor:pointer;color:#888">&times;</button>
+    </div>
+    <div id="galleryAlbumList" style="padding:1.25rem;overflow-y:auto;flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem">
+      <p style="color:#888;font-size:.88rem;grid-column:1/-1">Loading albums…</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let activeQuill = null;
+
+  // Track which editor is active based on tab
+  document.querySelectorAll('.gt-lang-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const map = { 'tab-en': 'quillEn', 'tab-hi': 'quillHi', 'tab-te': 'quillTe' };
+      activeQuill = window[map[btn.dataset.target]] || null;
+    });
+  });
+  // Default active editor
+  activeQuill = window.quillEn;
+
+  const modal     = document.getElementById('galleryModal');
+  const albumList = document.getElementById('galleryAlbumList');
+  let loaded = false;
+
+  document.getElementById('insertGalleryBtn').addEventListener('click', () => {
+    modal.style.display = 'flex';
+    if (!loaded) {
+      loaded = true;
+      fetch('/admin/articles/galleries')
+        .then(r => r.json())
+        .then(albums => {
+          if (!albums.length) {
+            albumList.innerHTML = '<p style="color:#888;font-size:.88rem;grid-column:1/-1">No active gallery albums found. Create some in the Gallery section first.</p>';
+            return;
+          }
+          albumList.innerHTML = albums.map(a => `
+            <div class="gt-gallery-pick-card" data-album-id="${a.id}" data-album-title="${a.title.replace(/"/g,'&quot;')}"
+                 style="cursor:pointer;border:2px solid #e9ecef;border-radius:8px;overflow:hidden;transition:border-color .15s"
+                 onmouseover="this.style.borderColor='#00663A'" onmouseout="this.style.borderColor='#e9ecef'">
+              <div style="height:100px;background:#f7f9fc;overflow:hidden">
+                ${a.cover_image ? `<img src="/uploads/gallery/${a.cover_image}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="fas fa-images" style="font-size:1.5rem;color:#ccc"></i></div>'}
+              </div>
+              <div style="padding:.6rem .75rem">
+                <div style="font-size:.82rem;font-weight:700;color:#111;margin-bottom:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.title}</div>
+                <div style="font-size:.72rem;color:#888">${a.photo_count} photo${a.photo_count===1?'':'s'}</div>
+              </div>
+            </div>`).join('');
+          albumList.querySelectorAll('.gt-gallery-pick-card').forEach(card => {
+            card.addEventListener('click', () => insertGallery(card.dataset.albumId, card.dataset.albumTitle));
+          });
+        })
+        .catch(() => { albumList.innerHTML = '<p style="color:red;font-size:.88rem">Failed to load albums.</p>'; });
+    }
+  });
+
+  document.getElementById('galleryModalClose').addEventListener('click', () => modal.style.display = 'none');
+  modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+  function insertGallery(albumId, albumTitle) {
+    const quill = activeQuill || window.quillEn;
+    if (!quill) return;
+    const range = quill.getSelection(true);
+    const idx   = range ? range.index : quill.getLength();
+    quill.insertEmbed(idx, 'block', '\n', Quill.sources.USER);
+    quill.clipboard.dangerouslyPasteHTML(idx,
+      `<div class="gt-inline-gallery" data-album="${albumId}"></div>`);
+    quill.setSelection(idx + 2, Quill.sources.SILENT);
+    modal.style.display = 'none';
+  }
+})();
 </script>
 </body>
 </html>

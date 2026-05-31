@@ -188,6 +188,15 @@ exports.articlesList = async (req, res) => {
   });
 };
 
+exports.getGalleriesJson = async (req, res) => {
+  const albums = await q(
+    `SELECT ga.id, ga.title, ga.cover_image, COUNT(gp.id) AS photo_count
+     FROM gallery_albums ga LEFT JOIN gallery_photos gp ON gp.album_id=ga.id
+     WHERE ga.is_active=1 GROUP BY ga.id ORDER BY ga.created_at DESC`
+  );
+  res.json(albums);
+};
+
 exports.uploadArticleImage = (req, res) => {
   articleImgUpload(req, res, err => {
     if (err) return res.status(400).json({ error: err.message });

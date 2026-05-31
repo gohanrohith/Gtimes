@@ -214,6 +214,9 @@ img { max-width: 100%; display: block; }
 .gt-article-content p    { margin-bottom: 1.25rem; }
 .gt-article-content img  { border-radius: var(--gt-radius); margin: 1.5rem 0; max-width: 100%; height: auto; }
 .gt-article-content table { max-width: 100%; overflow-x: auto; display: block; border-collapse: collapse; }
+.gt-article-gallery { margin: 2rem 0; border: 1px solid var(--gt-light); border-radius: var(--gt-radius-lg); overflow: hidden; }
+.gt-article-gallery-header { padding: .65rem 1rem; font-size: .84rem; font-weight: 700; background: var(--gt-off); border-bottom: 1px solid var(--gt-light); }
+.gt-article-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; padding: 8px; }
 .gt-article-content ul, .gt-article-content ol { padding-left: 1.5rem; margin-bottom: 1.25rem; }
 .gt-article-content blockquote {
   border-left: 4px solid var(--gt-red); padding: 1rem 1.5rem;

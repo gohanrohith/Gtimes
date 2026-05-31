@@ -261,6 +261,16 @@
   </div>
 </main>
 <%- include('../partials/footer') %>
+
+<!-- Lightbox for inline galleries -->
+<div id="lightbox" class="gt-lightbox">
+  <button id="lbClose" class="gt-lb-close"><i class="fas fa-times"></i></button>
+  <button id="lbPrev"  class="gt-lb-prev"><i class="fas fa-chevron-left"></i></button>
+  <button id="lbNext"  class="gt-lb-next"><i class="fas fa-chevron-right"></i></button>
+  <div class="gt-lb-content"><img id="lbImg" src="" alt=""></div>
+  <p id="lbCaption" class="gt-lb-caption"></p>
+</div>
+
 <script src="/js/main.js"></script>
 <script>
 (function() {

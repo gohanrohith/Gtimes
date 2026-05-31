@@ -103,6 +103,31 @@ exports.articles = async (req, res) => {
   });
 };
 
+// ── Inline gallery processor ─────────────────────────────
+async function processInlineGalleries(content) {
+  if (!content) return content;
+  const regex = /<div class="gt-inline-gallery" data-album="(\d+)"[^>]*><\/div>/gi;
+  const matches = [...content.matchAll(/<div class="gt-inline-gallery" data-album="(\d+)"[^>]*><\/div>/gi)];
+  if (!matches.length) return content;
+  const albumIds = [...new Set(matches.map(m => parseInt(m[1])))];
+  const galleries = {};
+  await Promise.all(albumIds.map(async id => {
+    const [album, photos] = await Promise.all([
+      q1('SELECT * FROM gallery_albums WHERE id=? AND is_active=1', [id]),
+      q('SELECT * FROM gallery_photos WHERE album_id=? ORDER BY sort_order ASC, id ASC LIMIT 20', [id]),
+    ]);
+    if (album && photos.length) galleries[id] = { album, photos };
+  }));
+  return content.replace(regex, (match, id) => {
+    const g = galleries[parseInt(id)];
+    if (!g) return '';
+    const photosHtml = g.photos.map(p =>
+      `<div class="gt-photo-item" data-src="/uploads/gallery/${p.filename}" data-caption="${(p.caption||'').replace(/"/g,'&quot;')}"><img src="/uploads/gallery/${p.filename}" alt="${(p.caption||'').replace(/"/g,'&quot;')}" loading="lazy" onerror="this.closest('.gt-photo-item').style.display='none'"></div>`
+    ).join('');
+    return `<div class="gt-article-gallery"><div class="gt-article-gallery-header"><i class="fas fa-images"></i> ${g.album.title} <span style="font-weight:400;color:var(--gt-gray);margin-left:.4rem">${g.photos.length} photos</span></div><div class="gt-article-gallery-grid">${photosHtml}</div></div>`;
+  });
+}
+
 // ── Single article ───────────────────────────────────────
 exports.article = async (req, res) => {
   const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
@@ -127,6 +152,10 @@ exports.article = async (req, res) => {
   ]);
 
   const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : `http://localhost:${process.env.PORT || 3001}`;
+
+  article.content    = await processInlineGalleries(article.content);
+  article.content_hi = await processInlineGalleries(article.content_hi);
+  article.content_te = await processInlineGalleries(article.content_te);
 
   res.render('main/article', {
     title: `${article.title} | ${settings.site_name || 'GTimes'}`,

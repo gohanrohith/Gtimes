@@ -36,6 +36,7 @@ router.post('/tags/:id/delete', ctrl.deleteTag);
 
 // Articles
 router.post('/articles/upload-image', ctrl.uploadArticleImage);
+router.get('/articles/galleries',     ctrl.getGalleriesJson);
 router.get('/articles',               ctrl.articlesList);
 router.get('/articles/new',           ctrl.articleForm);
 router.post('/articles/new',          ctrl.createArticle);
