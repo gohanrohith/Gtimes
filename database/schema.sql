@@ -1,8 +1,5 @@
 -- GTimes — Database Schema
--- Run once on the gtimes_db database
-
-CREATE DATABASE IF NOT EXISTS gtimes_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE gtimes_db;
+-- Import this into your existing gtimes_db database via phpMyAdmin
 
 -- Admin users
 CREATE TABLE IF NOT EXISTS admins (
