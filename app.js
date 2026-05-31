@@ -1,9 +1,4 @@
 require('dotenv').config();
-const fs         = require('fs');
-const path       = require('path');
-['articles','events','gallery','avatars','videos'].forEach(d =>
-  fs.mkdirSync(path.join(__dirname, 'public/uploads', d), { recursive: true })
-);
 const express    = require('express');
 const session    = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
@@ -11,6 +6,10 @@ const helmet     = require('helmet');
 const compression = require('compression');
 const morgan     = require('morgan');
 const path       = require('path');
+const fs         = require('fs');
+['articles','events','gallery','avatars','videos'].forEach(d =>
+  fs.mkdirSync(path.join(__dirname, 'public/uploads', d), { recursive: true })
+);
 
 const siteMiddleware  = require('./middleware/site');
 const { csrfMiddleware } = require('./middleware/csrf');
