@@ -337,8 +337,13 @@ exports.deleteArticle = async (req, res) => {
 
 // ── Events ─────────────────────────────────────────────
 exports.eventsList = async (req, res) => {
-  const events = await q('SELECT * FROM events ORDER BY event_date DESC');
-  res.render('admin/events', { title: 'Events | GTimes Admin', events });
+  const campus = req.query.campus || '';
+  const campusFilter = campus ? ' AND (campus=? OR campus IS NULL OR campus="")' : '';
+  const events = await q(
+    `SELECT * FROM events${campusFilter ? ' WHERE 1=1' + campusFilter : ''} ORDER BY event_date DESC`,
+    campus ? [campus] : []
+  );
+  res.render('admin/events', { title: 'Events | GTimes Admin', events, activeCampus: campus, success: req.query.success || null });
 };
 
 exports.eventForm = async (req, res) => {

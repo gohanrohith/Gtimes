@@ -23,12 +23,22 @@
     <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
     <% } %>
 
-    <div class="gt-admin-card" style="margin-top:1rem">
+    <% const CAMPUSES = ['Hasanparthy','Hunter Road','Mancherial','Gopalpur','Naimnagar']; %>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center">
+      <a href="/admin/events" class="btn btn-sm <%= !activeCampus ? 'btn-primary' : 'btn-outline' %>">All</a>
+      <% CAMPUSES.forEach(c => { %>
+      <a href="/admin/events?campus=<%= encodeURIComponent(c) %>" class="btn btn-sm <%= activeCampus===c ? 'btn-primary' : 'btn-outline' %>"><%= c %></a>
+      <% }) %>
+    </div>
+
+    <div class="gt-admin-card">
       <% if (events && events.length > 0) { %>
+      <div class="gt-table-wrap">
       <table class="gt-admin-table gt-admin-table-full">
         <thead>
           <tr>
             <th>Event</th>
+            <th>Campus</th>
             <th>Date</th>
             <th>Time</th>
             <th>Location</th>
@@ -41,7 +51,11 @@
           <tr>
             <td>
               <div style="font-weight:600;font-size:.88rem"><%= ev.title.substring(0,55) %><%= ev.title.length>55?'…':'' %></div>
-              <% if (ev.campus) { %><div style="font-size:.75rem;color:var(--gt-gray);margin-top:2px"><i class="fas fa-map-marker-alt"></i> <%= ev.campus %></div><% } %>
+            </td>
+            <td style="font-size:.82rem;white-space:nowrap">
+              <% if (ev.campus && ev.campus !== 'all' && ev.campus !== '') { %>
+              <span class="gt-badge gt-badge-info"><%= ev.campus %></span>
+              <% } else { %><span style="color:var(--gt-gray);font-size:.78rem">All</span><% } %>
             </td>
             <td style="font-size:.85rem;white-space:nowrap"><%= ev.event_date ? new Date(ev.event_date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—' %></td>
             <td style="font-size:.85rem"><%= ev.event_time || '—' %></td>
@@ -61,6 +75,7 @@
       <% } else { %>
       <div class="gt-empty"><i class="fas fa-calendar-alt"></i><p>No events yet. <a href="/admin/events/new">Add one</a>.</p></div>
       <% } %>
+      </div>
     </div>
   </main>
 </div>
