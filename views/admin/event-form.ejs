@@ -30,7 +30,7 @@
     <form action="<%= event ? '/admin/events/'+event.id+'/edit' : '/admin/events/new' %>" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-      <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start">
+      <div class="gt-form-2col">
 
         <div class="gt-admin-card">
           <div class="gt-form-group">

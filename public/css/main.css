@@ -398,6 +398,9 @@ img { max-width: 100%; display: block; }
 }
 .gt-footer-bottom a { color: var(--gt-lime); }
 
+/* mobile search shown only inside open menu */
+.gt-nav-search-mobile { display: none; }
+
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 1024px) {
   .gt-articles-grid    { grid-template-columns: repeat(2,1fr); }
@@ -409,13 +412,23 @@ img { max-width: 100%; display: block; }
 }
 @media (max-width: 768px) {
   .gt-nav { position: relative; }
-  .gt-nav-menu { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: #fff; padding: 1rem; border-top: 1px solid var(--gt-border); box-shadow: 0 8px 20px rgba(0,0,0,.1); z-index: 200; }
+  .gt-nav-menu {
+    display: none; flex-direction: column;
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: #fff; padding: .5rem .75rem 1rem;
+    border-top: 1px solid var(--gt-border);
+    box-shadow: 0 8px 20px rgba(0,0,0,.1); z-index: 200;
+  }
   .gt-nav-menu.open { display: flex; }
   .gt-nav-toggle { display: flex; flex-direction: column; }
   .gt-nav-search { display: none; }
+  .gt-nav-search-mobile { display: block; width: 100%; margin-bottom: .25rem; }
   .gt-nav-inner { flex-wrap: nowrap; height: 56px; padding: 0 16px; }
-  .gt-nav-link { padding: .65rem 1rem; font-size: .9rem; border-radius: 4px; }
-  .gt-has-dropdown .gt-dropdown { position: static; box-shadow: none; border: none; background: var(--gt-off); border-radius: 4px; min-width: 0; display: none; }
+  .gt-nav-link { padding: .65rem 1rem; font-size: .9rem; border-radius: 4px; width: 100%; }
+  .gt-has-dropdown .gt-dropdown {
+    position: static; box-shadow: none; border: none;
+    background: var(--gt-off); border-radius: 4px; min-width: 0; display: none;
+  }
   .gt-has-dropdown.open .gt-dropdown { display: block; }
   .gt-articles-grid { grid-template-columns: 1fr; }
   .gt-events-grid   { grid-template-columns: 1fr; }
@@ -427,6 +440,8 @@ img { max-width: 100%; display: block; }
   .gt-videos-grid   { grid-template-columns: 1fr; }
   .section { padding: 36px 0; }
   .gt-ticker-label { font-size: .72rem; padding: 0 .75rem; }
+  .gt-lb-prev { left: .5rem; }
+  .gt-lb-next { right: .5rem; }
 }
 @media (max-width: 480px) {
   .gt-nav-inner { height: 52px; padding: 0 12px; }
@@ -435,11 +450,16 @@ img { max-width: 100%; display: block; }
   .gt-page-hero p  { font-size: .88rem; }
   .gt-featured-body h2 { font-size: 1.15rem; }
   .gt-article-header h1 { font-size: 1.5rem; }
-  .gt-gallery-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .gt-photo-grid   { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .gt-articles-grid { grid-template-columns: 1fr; }
+  .gt-gallery-grid  { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gt-photo-grid    { grid-template-columns: 1fr 1fr; gap: 8px; }
   .container { padding: 0 14px; }
   .section { padding: 28px 0; }
   .gt-footer-grid { gap: 1.5rem; }
+  .gt-article-meta { gap: .5rem; font-size: .75rem; }
+  .gt-lb-close { top: .75rem; right: .75rem; }
+  .gt-lb-prev  { left: .25rem; width: 36px; height: 36px; }
+  .gt-lb-next  { right: .25rem; width: 36px; height: 36px; }
 }
 
 /* ── Gallery (album list) ─────────────────────────────── */

@@ -11,6 +11,14 @@
     </button>
 
     <ul class="gt-nav-menu" id="navMenu">
+      <li class="gt-nav-search-mobile">
+        <form action="/search" method="GET" style="padding:.5rem .75rem">
+          <div style="display:flex;gap:.5rem;align-items:center;background:var(--gt-off);border:1px solid var(--gt-border);border-radius:20px;padding:.3rem .75rem">
+            <input type="text" name="q" placeholder="Search articles..." style="flex:1;border:none;background:none;font-family:inherit;font-size:.88rem;outline:none;color:var(--gt-ink)">
+            <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--gt-gray);padding:0"><i class="fas fa-search"></i></button>
+          </div>
+        </form>
+      </li>
       <li><a href="/" class="gt-nav-link">Home</a></li>
       <li><a href="/articles" class="gt-nav-link">News</a></li>
       <li class="gt-has-dropdown">
@@ -30,7 +38,7 @@
     <div class="gt-nav-search">
       <form action="/search" method="GET" style="display:flex;align-items:center;gap:.5rem">
         <input type="text" name="q" placeholder="Search..." class="gt-search-input">
-        <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--gt-white)"><i class="fas fa-search"></i></button>
+        <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--gt-gray)"><i class="fas fa-search"></i></button>
       </form>
     </div>
   </div>
