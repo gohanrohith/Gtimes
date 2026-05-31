@@ -17,7 +17,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 15px; background: var(--gt-off); color: #343a40; }
+body { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 15px; background: var(--gt-off); color: #343a40; overflow-x: hidden; }
 a    { text-decoration: none; color: inherit; }
 ul   { list-style: none; }
 
