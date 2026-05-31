@@ -189,7 +189,7 @@ exports.articlesList = async (req, res) => {
 
 exports.articleForm = async (req, res) => {
   const categories = await getCategories();
-  res.render('admin/article-form', { title: 'New Article | GTimes Admin', article: null, categories, articleTags: '', admin: { username: req.session.adminName } });
+  res.render('admin/article-form', { title: 'New Article | GTimes Admin', article: null, categories, articleTags: '', admin: { username: req.session.adminName }, error: req.query.error || null });
 };
 
 exports.createArticle = (req, res) => {
@@ -207,12 +207,18 @@ exports.createArticle = (req, res) => {
     const slug = await makeSlug(title, 'articles');
     const schedDate = scheduled_at ? new Date(scheduled_at) : null;
     const validSched = schedDate && !isNaN(schedDate) ? schedDate : null;
-    const result = await q(
-      `INSERT INTO articles (title, slug, excerpt, content, content_hi, content_te, cover_image, category_id, author_name, featured, scheduled_at, created_by)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [title, slug, excerpt || null, content || null, content_hi || null, content_te || null,
-       cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0,
-       validSched, req.session.adminId]);
+    let result;
+    try {
+      result = await query(
+        `INSERT INTO articles (title, slug, excerpt, content, content_hi, content_te, cover_image, category_id, author_name, featured, scheduled_at, created_by)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [title, slug, excerpt || null, content || null, content_hi || null, content_te || null,
+         cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0,
+         validSched, req.session.adminId]);
+    } catch (dbErr) {
+      console.error('createArticle:', dbErr.message);
+      return res.redirect('/admin/articles/new?error=' + encodeURIComponent(dbErr.message));
+    }
     if (result.insertId && req.body.tags) {
       await saveTags(result.insertId, req.body.tags);
     }
@@ -228,7 +234,7 @@ exports.editArticleForm = async (req, res) => {
   ]);
   if (!article) return res.redirect('/admin/articles');
   const articleTags = tags.map(t => t.name).join(', ');
-  res.render('admin/article-form', { title: 'Edit Article | GTimes Admin', article, categories, articleTags, admin: { username: req.session.adminName } });
+  res.render('admin/article-form', { title: 'Edit Article | GTimes Admin', article, categories, articleTags, admin: { username: req.session.adminName }, error: req.query.error || null });
 };
 
 exports.updateArticle = (req, res) => {
@@ -253,10 +259,15 @@ exports.updateArticle = (req, res) => {
     const { scheduled_at } = req.body;
     const schedDate = scheduled_at ? new Date(scheduled_at) : null;
     const validSched = schedDate && !isNaN(schedDate) ? schedDate : null;
-    await q(`UPDATE articles SET title=?, slug=?, excerpt=?, content=?, content_hi=?, content_te=?, cover_image=?, category_id=?, author_name=?, featured=?, scheduled_at=? WHERE id=?`,
-      [title, slug, excerpt || null, content || null, content_hi || null, content_te || null,
-       cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0,
-       validSched, req.params.id]);
+    try {
+      await query(`UPDATE articles SET title=?, slug=?, excerpt=?, content=?, content_hi=?, content_te=?, cover_image=?, category_id=?, author_name=?, featured=?, scheduled_at=? WHERE id=?`,
+        [title, slug, excerpt || null, content || null, content_hi || null, content_te || null,
+         cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0,
+         validSched, req.params.id]);
+    } catch (dbErr) {
+      console.error('updateArticle:', dbErr.message);
+      return res.redirect(`/admin/articles/${req.params.id}/edit?error=` + encodeURIComponent(dbErr.message));
+    }
     if (req.body.tags !== undefined) {
       await saveTags(req.params.id, req.body.tags);
     }
