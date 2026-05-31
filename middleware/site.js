@@ -8,5 +8,9 @@ module.exports = function siteMiddleware(req, res, next) {
   res.locals.adminRole     = req.session?.adminRole || null;
   res.locals.adminName     = req.session?.adminName || null;
 
+  // Always define success/error so views never throw ReferenceError
+  res.locals.success = req.query.success || null;
+  res.locals.error   = req.query.error   || null;
+
   next();
 };

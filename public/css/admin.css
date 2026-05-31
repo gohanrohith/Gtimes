@@ -26,9 +26,10 @@ ul   { list-style: none; }
 
 /* ── Sidebar ─────────────────────────────────────────── */
 .gt-admin-sidebar {
-  width: var(--sidebar-w); background: var(--gt-dark); min-height: 100vh;
+  width: var(--sidebar-w); background: var(--gt-dark); height: 100vh;
   position: fixed; top: 0; left: 0; z-index: 50;
   display: flex; flex-direction: column;
+  overflow: hidden;
 }
 .gt-admin-brand {
   padding: 1.25rem 1.5rem 1rem;
@@ -38,7 +39,7 @@ ul   { list-style: none; }
 .gt-brand-g     { color: var(--gt-red); }
 .gt-brand-times { color: var(--gt-white); }
 
-.gt-admin-nav { padding: 1rem 0; flex: 1; }
+.gt-admin-nav { padding: 1rem 0; flex: 1; overflow-y: auto; }
 .gt-admin-link {
   display: flex; align-items: center; gap: .75rem;
   padding: .65rem 1.5rem; color: #aaa; font-size: .88rem; font-weight: 500;

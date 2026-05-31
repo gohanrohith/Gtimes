@@ -18,10 +18,10 @@
       <h1>Settings</h1>
     </div>
 
-    <% if (locals.success) { %>
+    <% if (success) { %>
     <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> Settings saved.</div>
     <% } %>
-    <% if (locals.error) { %>
+    <% if (error) { %>
     <div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
     <% } %>
 

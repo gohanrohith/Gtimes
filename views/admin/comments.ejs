@@ -28,7 +28,7 @@
       <a href="/admin/comments?status=spam" class="gt-tab <%= filter==='spam' ? 'active' : '' %>">Spam</a>
     </div>
 
-    <% if (locals.success) { %>
+    <% if (success) { %>
     <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
     <% } %>
 

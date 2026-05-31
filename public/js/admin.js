@@ -39,9 +39,12 @@ if (sidebar) {
 const path = window.location.pathname;
 document.querySelectorAll('.gt-admin-link').forEach(link => {
   const href = link.getAttribute('href');
-  if (href === '/' ? path === '/' : (href !== '/' && path.startsWith(href))) {
-    link.classList.add('active');
-  }
+  if (!href) return;
+  // Exact match for the dashboard (/admin), startsWith+boundary for all others
+  const isActive = href === '/admin'
+    ? (path === '/admin' || path === '/admin/')
+    : (path === href || path.startsWith(href + '/'));
+  if (isActive) link.classList.add('active');
 });
 
 // Confirm deletes — forms with data-confirm attribute
