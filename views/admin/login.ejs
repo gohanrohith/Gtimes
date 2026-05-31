@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -8,36 +8,123 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/css/admin.css">
+  <style>
+    .gt-login-page {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0d1117 0%, #1F1B76 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .gt-login-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.4);
+    }
+    .gt-login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .gt-login-logo {
+      height: 48px; width: auto;
+      display: block; margin: 0 auto .75rem;
+    }
+    .gt-login-logo-fallback {
+      font-size: 2rem; font-weight: 900; line-height: 1;
+      margin-bottom: .75rem;
+    }
+    .gt-login-logo-fallback .g { color: #e63946; }
+    .gt-login-logo-fallback .t { color: #111827; }
+    .gt-login-subtitle {
+      font-size: .8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: #6c757d;
+      background: #f7f9fc; border: 1px solid #e9ecef;
+      display: inline-block; padding: .2rem .75rem; border-radius: 20px;
+    }
+    .gt-login-divider {
+      font-size: .82rem; color: #6c757d; margin-bottom: 1.5rem;
+    }
+    .gt-login-input-wrap {
+      position: relative; margin-bottom: 1rem;
+    }
+    .gt-login-input-wrap i {
+      position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+      color: #aaa; font-size: .85rem;
+    }
+    .gt-login-input {
+      width: 100%; padding: .7rem 1rem .7rem 2.5rem;
+      border: 1.5px solid #e9ecef; border-radius: 8px;
+      font-family: 'Outfit', sans-serif; font-size: .9rem;
+      transition: border-color .2s;
+    }
+    .gt-login-input:focus { outline: none; border-color: #00663A; }
+    .gt-login-btn {
+      width: 100%; padding: .75rem;
+      background: #00663A; color: #fff;
+      border: none; border-radius: 8px;
+      font-family: 'Outfit', sans-serif; font-size: .95rem; font-weight: 700;
+      cursor: pointer; transition: background .2s; margin-top: .25rem;
+    }
+    .gt-login-btn:hover { background: #004d2b; }
+    .gt-login-error {
+      background: #fee2e2; color: #991b1b;
+      border-radius: 8px; padding: .75rem 1rem;
+      font-size: .85rem; margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .gt-login-back {
+      text-align: center; margin-top: 1.5rem;
+    }
+    .gt-login-back a {
+      font-size: .8rem; color: #aaa;
+      text-decoration: none; transition: color .2s;
+    }
+    .gt-login-back a:hover { color: #555; }
+  </style>
 </head>
-<body class="gt-admin-login-page">
-  <div class="gt-login-wrap">
-    <div class="gt-login-brand">
-      <span style="color:var(--gt-red)">G</span>Times <span style="font-size:.9rem;font-weight:400;opacity:.6">Admin</span>
+<body class="gt-login-page">
+  <div class="gt-login-box">
+
+    <div class="gt-login-header">
+      <img src="/GTIMES-PNG.png" alt="GTimes" class="gt-login-logo"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+      <div class="gt-login-logo-fallback" style="display:none">
+        <span class="g">G</span><span class="t">Times</span>
+      </div>
+      <div class="gt-login-subtitle">Admin Panel</div>
     </div>
-    <p class="gt-login-sub">Sign in to manage content</p>
 
     <% if (error) { %>
-    <div class="gt-alert gt-alert-error" style="margin-bottom:1.25rem"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+    <div class="gt-login-error">
+      <i class="fas fa-exclamation-circle"></i> <%= error %>
+    </div>
     <% } %>
 
-    <form action="/admin/login" method="POST" class="gt-login-form">
+    <form action="/admin/login" method="POST">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <div class="gt-form-group">
-        <label><i class="fas fa-user"></i> Username</label>
-        <input type="text" name="username" required autofocus placeholder="admin">
+
+      <div class="gt-login-input-wrap">
+        <i class="fas fa-user"></i>
+        <input type="text" name="username" class="gt-login-input"
+               required autofocus placeholder="Username" autocomplete="username">
       </div>
-      <div class="gt-form-group">
-        <label><i class="fas fa-lock"></i> Password</label>
-        <input type="password" name="password" required placeholder="••••••••">
+
+      <div class="gt-login-input-wrap">
+        <i class="fas fa-lock"></i>
+        <input type="password" name="password" class="gt-login-input"
+               required placeholder="Password" autocomplete="current-password">
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem">
-        <i class="fas fa-sign-in-alt"></i> Sign In
+
+      <button type="submit" class="gt-login-btn">
+        <i class="fas fa-sign-in-alt"></i> &nbsp;Sign In
       </button>
     </form>
 
-    <p style="text-align:center;margin-top:1.5rem;font-size:.8rem;color:var(--gt-gray)">
-      <a href="/admin" style="color:var(--gt-gray)"><i class="fas fa-arrow-left"></i> Back to GTimes</a>
-    </p>
+    <div class="gt-login-back">
+      <a href="/"><i class="fas fa-arrow-left"></i> Back to GTimes</a>
+    </div>
+
   </div>
 </body>
 </html>
