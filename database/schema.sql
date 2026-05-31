@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS settings (
 
 -- Default admin (password: gtimes@admin — CHANGE IMMEDIATELY)
 INSERT IGNORE INTO admins (username, password, name, role)
-VALUES ('admin', '$2b$10$FYmK8Q/xQ3jxokXbxQEJ9Oz2metBrfknl8ja46D8cRjiCFhDyH4D6', 'Super Admin', 'super');
+VALUES ('admin', '$2b$10$SPpU2DN7dET8bt30fynR3OoOzc8p1LQNhwe03NzXg5vnmtraTh8eC', 'Super Admin', 'super');
 
 -- Default categories
 INSERT IGNORE INTO categories (name, slug, color, sort_order) VALUES
