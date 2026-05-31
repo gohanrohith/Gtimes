@@ -31,7 +31,7 @@
       <% if (filter||search) { %><a href="/admin/articles" class="btn btn-sm btn-ghost">Clear</a><% } %>
     </form>
 
-    <% if (success) { %><div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div><% } %>
+    <% if (locals.success) { %><div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div><% } %>
     <% if (typeof error !== 'undefined' && error) { %><div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
     <% if (typeof filter !== 'undefined' && !filter && typeof search !== 'undefined' && !search) { %>
     <% const reviewCount = articles.filter ? 0 : null; %>

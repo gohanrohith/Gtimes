@@ -18,7 +18,7 @@
       <a href="/admin/categories" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
     </div>
 
-    <% if (error) { %><div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
+    <% if (locals.error) { %><div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
 
     <div class="gt-admin-card" style="max-width:520px">
       <form action="<%= category ? '/admin/categories/'+category.id+'/edit' : '/admin/categories/new' %>" method="POST">

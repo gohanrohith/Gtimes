@@ -19,10 +19,10 @@
       <a href="/admin/newsletter/export.csv" class="btn btn-outline"><i class="fas fa-download"></i> Export CSV</a>
     </div>
 
-    <% if (success) { %>
+    <% if (locals.success) { %>
     <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
     <% } %>
-    <% if (error) { %>
+    <% if (locals.error) { %>
     <div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
     <% } %>
 
