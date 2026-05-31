@@ -15,6 +15,9 @@ const apiRoutes   = require('./routes/api');
 
 const app = express();
 
+// Trust Hostinger's reverse proxy — required for secure cookies + correct IPs
+app.set('trust proxy', 1);
+
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
@@ -23,12 +26,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'gtimes-dev-secret',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,   // ensure session is created on first GET so CSRF token persists
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction,    // HTTPS-only in production
+    sameSite: 'lax',         // required for form submissions to include cookie
+    httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7,
   },
 };
@@ -36,12 +43,17 @@ const sessionConfig = {
 if (process.env.DB_PASS) {
   try {
     const pool = require('./config/database');
-    sessionConfig.store = new MySQLStore({
+    const store = new MySQLStore({
       clearExpired: true,
       checkExpirationInterval: 900000,
       expiration: 86400000,
     }, pool);
-  } catch { console.warn('Session store falling back to memory'); }
+    store.on('error', err => console.warn('Session store error:', err.message));
+    sessionConfig.store = store;
+    console.log('  Sessions → MySQL');
+  } catch (e) {
+    console.warn('  Sessions → memory (DB store failed:', e.message, ')');
+  }
 }
 
 app.use(session(sessionConfig));
@@ -65,7 +77,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3001;
 const DOMAIN = process.env.MAIN_DOMAIN || 'localhost';
-const base = process.env.NODE_ENV === 'production' ? `https://${DOMAIN}` : `http://localhost:${PORT}`;
+const base = isProduction ? `https://${DOMAIN}` : `http://localhost:${PORT}`;
 app.listen(PORT, () => {
   console.log(`\n  GTimes running at:`);
   console.log(`  Main  →  ${base}`);
