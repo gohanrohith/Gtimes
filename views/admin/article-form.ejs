@@ -118,15 +118,9 @@
             <% const canPublish = locals.adminRole === 'editor' || locals.adminRole === 'super'; %>
             <% if (article) { %>
               <% if (canPublish && article.status !== 'published') { %>
-              <form action="/admin/articles/<%= article.id %>/publish" method="POST" style="margin-top:.5rem">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button type="submit" class="btn btn-success" style="width:100%;justify-content:center"><i class="fas fa-check"></i> Publish Now</button>
-              </form>
+              <button type="submit" form="publishForm" class="btn btn-success" style="width:100%;justify-content:center;margin-top:.5rem"><i class="fas fa-check"></i> Publish Now</button>
               <% } else if (!canPublish && article.status === 'draft') { %>
-              <form action="/admin/articles/<%= article.id %>/submit-review" method="POST" style="margin-top:.5rem">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button type="submit" class="btn btn-outline" style="width:100%;justify-content:center"><i class="fas fa-paper-plane"></i> Submit for Review</button>
-              </form>
+              <button type="submit" form="reviewForm" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:.5rem"><i class="fas fa-paper-plane"></i> Submit for Review</button>
               <% } %>
               <a href="/admin/articles/<%= article.id %>/preview" target="_blank" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:.5rem">
                 <i class="fas fa-eye"></i> Preview
@@ -181,6 +175,19 @@
 
       </div>
     </form>
+    <% if (article) { %>
+      <% if (locals.adminRole === 'editor' || locals.adminRole === 'super') { %>
+      <% if (article.status !== 'published') { %>
+      <form id="publishForm" action="/admin/articles/<%= article.id %>/publish" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      </form>
+      <% } %>
+      <% } else if (article.status === 'draft') { %>
+      <form id="reviewForm" action="/admin/articles/<%= article.id %>/submit-review" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      </form>
+      <% } %>
+    <% } %>
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
