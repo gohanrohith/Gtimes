@@ -49,8 +49,7 @@
     <% } %>
 
     <div class="gt-admin-card" style="max-width:640px;margin-bottom:2rem">
-      <form action="/admin/gallery/<%= album.id %>/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <form action="/admin/gallery/<%= album.id %>/upload?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data" id="uploadForm">
         <div class="gt-form-group">
           <label>Select Photos <span style="font-weight:400;color:var(--gt-gray)">(multiple allowed, max 5 MB each)</span></label>
           <input type="file" name="photos" id="photoInput" accept="image/*" multiple class="gt-file-input">

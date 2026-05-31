@@ -44,8 +44,7 @@
     </div>
     <% } %>
 
-    <form action="<%= article ? '/admin/articles/'+article.id+'/edit' : '/admin/articles/new' %>" method="POST" enctype="multipart/form-data" id="articleForm">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <form action="<%= article ? '/admin/articles/'+article.id+'/edit' : '/admin/articles/new' %>?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data" id="articleForm">
       <!-- Hidden inputs — synced from Quill on submit -->
       <input type="hidden" name="content"    id="inputEn">
       <input type="hidden" name="content_hi" id="inputHi">

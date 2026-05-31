@@ -27,8 +27,7 @@
     </div>
     <% } %>
 
-    <form action="<%= event ? '/admin/events/'+event.id+'/edit' : '/admin/events/new' %>" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <form action="<%= event ? '/admin/events/'+event.id+'/edit' : '/admin/events/new' %>?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
 
       <div class="gt-form-2col">
 
