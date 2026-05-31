@@ -50,7 +50,7 @@ img { max-width: 100%; display: block; }
   font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px;
   display: flex; align-items: center; flex-shrink: 0;
 }
-.gt-brand-logo { height: 36px; width: auto; display: block; }
+.gt-brand-logo { height: 44px; width: auto; display: block; max-width: 220px; }
 .gt-brand-g     { color: var(--gt-red); }
 .gt-brand-times { color: var(--gt-ink); }
 .gt-footer-brand-lockup { display: flex; align-items: center; gap: 0; margin-bottom: 1rem; }

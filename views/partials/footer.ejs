@@ -4,9 +4,12 @@
       <div class="gt-footer-grid">
         <div>
           <div class="gt-footer-brand-lockup">
-            <img src="/GTIMES-PNG.png" alt="GTimes" class="gt-footer-brand-logo"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'">
-            <span class="gt-brand-fallback" style="display:none"><span class="gt-brand-g">G</span><span class="gt-brand-times">Times</span></span>
+            <a href="/" style="display:inline-block;background:#fff;border-radius:6px;padding:5px 10px;margin-bottom:.75rem"
+               onerror="this.style.display='none'">
+              <img src="/GTIMES-PNG.png" alt="GTimes" style="height:40px;width:auto;display:block"
+                   onerror="this.parentElement.style.display='none';this.parentElement.nextElementSibling.style.display='inline'">
+            </a>
+            <span class="gt-brand-fallback" style="display:none;font-size:1.4rem;font-weight:800"><span class="gt-brand-g">G</span><span class="gt-brand-times">Times</span></span>
           </div>
           <p style="color:#aaa;font-size:.88rem;line-height:1.7;max-width:280px"><%= settings?.site_tagline || 'Your School. Your Stories.' %> — The student media platform of Greenwood High School.</p>
           <div class="gt-footer-social">
