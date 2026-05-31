@@ -298,7 +298,7 @@ exports.events = async (req, res) => {
 exports.gallery = async (req, res) => {
   const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
   const campus = req.query.campus || '';
-  const campusFilter = campus ? ' AND (ga.campus=? OR ga.campus="all")' : '';
+  const campusFilter = campus ? ' AND (ga.campus=? OR ga.campus="all" OR ga.campus IS NULL)' : '';
   const campusParam  = campus ? [campus] : [];
 
   const albums = await q(

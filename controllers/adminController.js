@@ -412,7 +412,7 @@ exports.deleteEvent = async (req, res) => {
 // ── Gallery ────────────────────────────────────────────
 exports.galleryList = async (req, res) => {
   const campus = req.query.campus || '';
-  const campusFilter = campus ? ' AND (ga.campus=? OR ga.campus="all")' : '';
+  const campusFilter = campus ? ' AND (ga.campus=? OR ga.campus="all" OR ga.campus IS NULL)' : '';
   const albums = await q(
     `SELECT ga.*, COUNT(gp.id) AS photo_count
      FROM gallery_albums ga LEFT JOIN gallery_photos gp ON gp.album_id=ga.id
