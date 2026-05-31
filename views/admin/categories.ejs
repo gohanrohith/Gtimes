@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/emblem.png">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Categories</h1>
+      <a href="/admin/categories/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Category</a>
+    </div>
+
+    <% if (success) { %><div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> Saved.</div><% } %>
+    <% if (error)   { %><div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
+
+    <div class="gt-admin-card">
+      <% if (categories && categories.length > 0) { %>
+      <table class="gt-admin-table gt-admin-table-full">
+        <thead><tr><th>Colour</th><th>Name</th><th>Slug</th><th>Articles</th><th>Order</th><th></th></tr></thead>
+        <tbody>
+          <% categories.forEach(c => { %>
+          <tr>
+            <td><div style="width:24px;height:24px;border-radius:50%;background:<%= c.color %>"></div></td>
+            <td style="font-weight:600"><%= c.name %></td>
+            <td style="color:var(--gt-gray);font-size:.82rem"><%= c.slug %></td>
+            <td><%= c.article_count %></td>
+            <td><%= c.sort_order %></td>
+            <td style="text-align:right;white-space:nowrap">
+              <a href="/admin/categories/<%= c.id %>/edit" class="btn btn-xs btn-outline"><i class="fas fa-pen"></i></a>
+              <% if (c.article_count == 0) { %>
+              <form action="/admin/categories/<%= c.id %>/delete" method="POST" style="display:inline;margin-left:4px">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete"><i class="fas fa-trash"></i></button>
+              </form>
+              <% } else { %>
+              <button class="btn btn-xs btn-danger" disabled title="Remove all articles from this category first" style="margin-left:4px;opacity:.4"><i class="fas fa-trash"></i></button>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+      <div class="gt-empty"><i class="fas fa-tag"></i><p>No categories yet.</p></div>
+      <% } %>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

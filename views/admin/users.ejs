@@ -16,7 +16,7 @@
   <main class="gt-admin-main">
     <div class="gt-admin-page-header">
       <h1>Admin Users</h1>
-      <a href="/users/new" class="btn btn-primary"><i class="fas fa-plus"></i> Add User</a>
+      <a href="/admin/users/new" class="btn btn-primary"><i class="fas fa-plus"></i> Add User</a>
     </div>
 
     <% if (success) { %>
@@ -39,9 +39,9 @@
             <td><span class="gt-badge gt-badge-<%= u.role==='super'?'green':u.role==='editor'?'blue':'gray' %>"><%= u.role %></span></td>
             <td><%= new Date(u.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
             <td>
-              <a href="/users/<%= u.id %>/edit" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>
+              <a href="/admin/users/<%= u.id %>/edit" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>
               <% if (u.id !== parseInt(adminId || 0)) { %>
-              <form method="POST" action="/users/<%= u.id %>/delete" style="display:inline" onsubmit="return confirm('Delete user <%= u.username %>? This cannot be undone.')">
+              <form method="POST" action="/admin/users/<%= u.id %>/delete" style="display:inline" onsubmit="return confirm('Delete user <%= u.username %>? This cannot be undone.')">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
               </form>

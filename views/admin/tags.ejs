@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/emblem.png">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1>Tags</h1>
+      <span style="font-size:.85rem;color:var(--gt-gray)">Tags are created automatically when added to articles.</span>
+    </div>
+
+    <% if (success) { %><div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> Tag deleted.</div><% } %>
+
+    <div class="gt-admin-card">
+      <% if (tags && tags.length > 0) { %>
+      <div style="margin-bottom:.75rem;font-size:.82rem;color:var(--gt-gray)"><%= tags.length %> tag<%= tags.length!==1?'s':'' %> total</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+        <% tags.forEach(t => { %>
+        <div style="display:flex;align-items:center;gap:.4rem;background:var(--gt-off);border:1px solid var(--gt-light);border-radius:20px;padding:.3rem .6rem .3rem .85rem;font-size:.82rem">
+          <a href="/tag/<%= t.slug %>" target="_blank" style="color:var(--gt-dark);font-weight:600">#<%= t.name %></a>
+          <span style="color:var(--gt-gray-lt);font-size:.75rem">(<%= t.article_count %>)</span>
+          <form action="/admin/tags/<%= t.id %>/delete" method="POST" style="display:inline;margin-left:2px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" style="padding:2px 5px;border-radius:50%;line-height:1" title="Delete tag"><i class="fas fa-times" style="font-size:.65rem"></i></button>
+          </form>
+        </div>
+        <% }) %>
+      </div>
+      <p style="margin-top:1rem;font-size:.78rem;color:var(--gt-gray)"><i class="fas fa-info-circle"></i> Deleting a tag removes it from all articles that use it.</p>
+      <% } else { %>
+      <div class="gt-empty"><i class="fas fa-tags"></i><p>No tags yet. Tags are created when you add them to articles.</p></div>
+      <% } %>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

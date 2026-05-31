@@ -16,7 +16,7 @@
   <main class="gt-admin-main">
     <div class="gt-admin-page-header">
       <h1><%= event ? 'Edit Event' : 'New Event' %></h1>
-      <a href="/events" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+      <a href="/admin/events" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
     </div>
 
     <% if (errors && errors.length > 0) { %>
@@ -27,7 +27,7 @@
     </div>
     <% } %>
 
-    <form action="<%= event ? '/events/'+event.id+'/edit' : '/events/new' %>" method="POST" enctype="multipart/form-data">
+    <form action="<%= event ? '/admin/events/'+event.id+'/edit' : '/admin/events/new' %>" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
       <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start">
@@ -78,7 +78,6 @@
                 <option value="upcoming" <%= (event?.status||'upcoming')==='upcoming'?'selected':'' %>>Upcoming</option>
                 <option value="ongoing" <%= event?.status==='ongoing'?'selected':'' %>>Ongoing</option>
                 <option value="completed" <%= event?.status==='completed'?'selected':'' %>>Completed</option>
-                <option value="cancelled" <%= event?.status==='cancelled'?'selected':'' %>>Cancelled</option>
               </select>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/emblem.png">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header"><h1>Analytics</h1></div>
+
+    <!-- Stat cards -->
+    <div class="gt-stats-grid" style="margin-bottom:1.5rem">
+      <div class="gt-stat-card">
+        <div class="gt-stat-icon" style="background:rgba(0,102,58,.1);color:var(--gt-green)"><i class="fas fa-newspaper"></i></div>
+        <div class="gt-stat-body">
+          <div class="gt-stat-num"><%= (statusMap.published||0) %></div>
+          <div class="gt-stat-label">Published Articles</div>
+        </div>
+      </div>
+      <div class="gt-stat-card">
+        <div class="gt-stat-icon" style="background:rgba(230,57,70,.1);color:var(--gt-red)"><i class="fas fa-eye"></i></div>
+        <div class="gt-stat-body">
+          <div class="gt-stat-num"><%= Number(totalViews).toLocaleString('en-IN') %></div>
+          <div class="gt-stat-label">Total Article Views</div>
+        </div>
+      </div>
+      <div class="gt-stat-card">
+        <div class="gt-stat-icon" style="background:rgba(181,210,54,.15);color:#7a9b00"><i class="fas fa-envelope"></i></div>
+        <div class="gt-stat-body">
+          <div class="gt-stat-num"><%= subscribers %></div>
+          <div class="gt-stat-label">Newsletter Subscribers</div>
+        </div>
+      </div>
+      <div class="gt-stat-card">
+        <div class="gt-stat-icon" style="background:rgba(31,27,118,.1);color:var(--gt-navy)"><i class="fas fa-comments"></i></div>
+        <div class="gt-stat-body">
+          <div class="gt-stat-num"><%= pendingComments %></div>
+          <div class="gt-stat-label">Pending Comments</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary stats row -->
+    <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+      <% [[totalEvents,'fa-calendar-alt','Events'],[totalPhotos,'fa-images','Photos'],[totalVideos,'fa-video','Videos'],[statusMap.draft||0,'fa-file-alt','Drafts'],[statusMap.review||0,'fa-clock','In Review']].forEach(([n,icon,label]) => { %>
+      <div style="background:var(--gt-white);border-radius:var(--gt-radius);padding:.75rem 1.25rem;display:flex;align-items:center;gap:.75rem;box-shadow:var(--gt-shadow);flex:1;min-width:120px">
+        <i class="fas <%= icon %>" style="color:var(--gt-green);font-size:1.1rem"></i>
+        <div><div style="font-size:1.1rem;font-weight:800"><%= n %></div><div style="font-size:.75rem;color:var(--gt-gray)"><%= label %></div></div>
+      </div>
+      <% }) %>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+
+      <!-- Top articles by views -->
+      <div class="gt-admin-card">
+        <div class="gt-admin-card-header"><h3><i class="fas fa-fire" style="color:var(--gt-red)"></i> Most Read Articles</h3></div>
+        <% if (topArticles && topArticles.length > 0) { %>
+        <table class="gt-admin-table">
+          <tbody>
+            <% topArticles.forEach((a, i) => { %>
+            <tr>
+              <td style="width:24px;font-weight:800;color:var(--gt-gray-lt);font-size:.9rem"><%= i+1 %></td>
+              <td>
+                <div style="font-weight:600;font-size:.85rem"><a href="/article/<%= a.slug %>" target="_blank" style="color:var(--gt-dark)"><%= a.title.substring(0,55) %><%= a.title.length>55?'…':'' %></a></div>
+                <% if (a.cat_name) { %><span style="font-size:.72rem;color:#fff;background:<%= a.cat_color||'#888' %>;border-radius:10px;padding:1px 7px"><%= a.cat_name %></span><% } %>
+              </td>
+              <td style="text-align:right;white-space:nowrap;font-size:.82rem;font-weight:700"><i class="fas fa-eye" style="color:var(--gt-gray-lt)"></i> <%= Number(a.views).toLocaleString('en-IN') %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } else { %>
+        <div class="gt-empty"><i class="fas fa-chart-bar"></i><p>No views recorded yet.</p></div>
+        <% } %>
+      </div>
+
+      <!-- Articles by category -->
+      <div class="gt-admin-card">
+        <div class="gt-admin-card-header"><h3><i class="fas fa-chart-pie" style="color:var(--gt-green)"></i> Articles by Category</h3></div>
+        <% if (byCategory && byCategory.length > 0) { %>
+        <% const maxCnt = Math.max(...byCategory.map(c => c.cnt), 1); %>
+        <div style="display:flex;flex-direction:column;gap:.75rem;padding:.25rem 0">
+          <% byCategory.forEach(c => { %>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:.25rem;font-size:.82rem">
+              <span style="font-weight:600"><%= c.name %></span>
+              <span style="color:var(--gt-gray)"><%= c.cnt %> article<%= c.cnt!==1?'s':'' %></span>
+            </div>
+            <div style="height:8px;border-radius:4px;background:var(--gt-off);overflow:hidden">
+              <div style="height:100%;width:<%= Math.round((c.cnt/maxCnt)*100) %>%;background:<%= c.color||'#00663A' %>;border-radius:4px;transition:width .3s"></div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+        <% } else { %>
+        <div class="gt-empty"><i class="fas fa-tags"></i><p>No articles yet.</p></div>
+        <% } %>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

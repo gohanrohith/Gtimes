@@ -19,6 +19,14 @@
 </div>
 <main class="section">
   <div class="container">
+    <% if (typeof campuses !== 'undefined' && campuses.length > 0) { %>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center">
+      <a href="/events" class="btn btn-sm <%= !activeCampus ? 'btn-primary' : 'btn-outline' %>">All Campuses</a>
+      <% campuses.forEach(c => { %>
+      <a href="/events?campus=<%= encodeURIComponent(c) %>" class="btn btn-sm <%= activeCampus===c ? 'btn-primary' : 'btn-outline' %>"><%= c %></a>
+      <% }) %>
+    </div>
+    <% } %>
     <% if (upcoming && upcoming.length > 0) { %>
     <div class="gt-section-header"><h2>Upcoming Events</h2></div>
     <div class="gt-events-grid" style="margin-bottom:3rem">

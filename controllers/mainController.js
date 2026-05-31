@@ -31,9 +31,20 @@ async function getArticleTags(articleId) {
   return q(`SELECT t.* FROM tags t JOIN article_tags at ON at.tag_id=t.id WHERE at.article_id=?`, [articleId]);
 }
 
+// ── Auto-publish scheduled articles ──────────────────────
+async function autoPublishScheduled() {
+  try {
+    await query(
+      `UPDATE articles SET status='published', published_at=scheduled_at
+       WHERE status='draft' AND scheduled_at IS NOT NULL AND scheduled_at <= NOW()`
+    );
+  } catch { /* column may not exist on older DB */ }
+}
+
 // ── Home ────────────────────────────────────────────────
 exports.home = async (req, res) => {
-  const [settings, categories, featuredArr, latest, events, videos] = await Promise.all([
+  autoPublishScheduled().catch(() => {});
+  const [settings, categories, featuredArr, latest, events, videos, trending] = await Promise.all([
     getSettings(),
     getCategories(),
     q(`SELECT a.*, c.name AS cat_name, c.slug AS cat_slug, c.color AS cat_color
@@ -46,14 +57,16 @@ exports.home = async (req, res) => {
        ORDER BY a.published_at DESC LIMIT 9`),
     q(`SELECT * FROM events WHERE status='upcoming' ORDER BY event_date ASC LIMIT 4`),
     q(`SELECT * FROM videos WHERE status='published' ORDER BY created_at DESC LIMIT 4`),
+    q(`SELECT a.title, a.slug, a.views, a.published_at, c.color AS cat_color, c.name AS cat_name
+       FROM articles a LEFT JOIN categories c ON a.category_id=c.id
+       WHERE a.status='published' ORDER BY a.views DESC LIMIT 5`),
   ]);
   res.render('main/index', {
     title: `${settings.site_name || 'GTimes'} — ${settings.site_tagline || 'Your School. Your Stories.'}`,
     settings, categories,
     featured: featuredArr[0] ? { ...featuredArr[0], reading_time: readingTime(featuredArr[0].content) } : null,
     latest: withReadingTime(latest),
-    events, videos,
-  });
+    events, videos, trending,
 };
 
 // ── Articles listing ─────────────────────────────────────
@@ -130,14 +143,20 @@ exports.postComment = async (req, res) => {
   const article = await q1('SELECT id, title FROM articles WHERE slug=? AND status=?', [req.params.slug, 'published']);
   if (!article) return res.status(404).send('Not found');
 
+  const settings = await getSettings();
+  if (settings.comments_enabled === '0') return res.redirect(`/article/${req.params.slug}`);
+
   const { name, email, content } = req.body;
   if (!name || !content) return res.redirect(`/article/${req.params.slug}?error=Name+and+comment+are+required`);
 
   try {
-    await query('INSERT INTO comments (article_id, name, email, content) VALUES (?,?,?,?)',
-      [article.id, name.trim(), email?.trim() || null, content.trim()]);
-    const { notifyNewComment } = require('../config/mailer');
-    notifyNewComment({ article_title: article.title, name, email, content }).catch(() => {});
+    const commentStatus = settings.comments_moderation === '0' ? 'approved' : 'pending';
+    await query('INSERT INTO comments (article_id, name, email, content, status) VALUES (?,?,?,?,?)',
+      [article.id, name.trim(), email?.trim() || null, content.trim(), commentStatus]);
+    if (commentStatus === 'pending') {
+      const { notifyNewComment } = require('../config/mailer');
+      notifyNewComment({ article_title: article.title, name, email, content }).catch(() => {});
+    }
   } catch { /* DB not ready */ }
 
   res.redirect(`/article/${req.params.slug}?success=comment`);
@@ -224,29 +243,44 @@ exports.author = async (req, res) => {
 };
 
 // ── Events ───────────────────────────────────────────────
+const CAMPUSES = ['Hasanparthy', 'Hunter Road', 'Mancherial', 'Gopalpur', 'Naimnagar'];
+
 exports.events = async (req, res) => {
-  const [settings, categories, upcoming, past] = await Promise.all([
-    getSettings(), getCategories(),
-    q(`SELECT * FROM events WHERE status IN ('upcoming','ongoing') ORDER BY event_date ASC`),
-    q(`SELECT * FROM events WHERE status='completed' ORDER BY event_date DESC LIMIT 12`),
+  const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
+  const campus = req.query.campus || '';
+  const campusFilter = campus ? ' AND (campus=? OR campus="all" OR campus IS NULL)' : '';
+  const campusParam  = campus ? [campus] : [];
+
+  const [upcoming, past] = await Promise.all([
+    q(`SELECT * FROM events WHERE status IN ('upcoming','ongoing')${campusFilter} ORDER BY event_date ASC`,
+      [...campusParam]),
+    q(`SELECT * FROM events WHERE status='completed'${campusFilter} ORDER BY event_date DESC LIMIT 12`,
+      [...campusParam]),
   ]);
   res.render('main/events', {
     title: `Events | ${settings.site_name || 'GTimes'}`,
     settings, categories, upcoming, past,
+    activeCampus: campus, campuses: CAMPUSES,
   });
 };
 
 // ── Gallery ──────────────────────────────────────────────
 exports.gallery = async (req, res) => {
-  const [settings, categories, albums] = await Promise.all([
-    getSettings(), getCategories(),
-    q(`SELECT ga.*, COUNT(gp.id) AS photo_count
-       FROM gallery_albums ga LEFT JOIN gallery_photos gp ON gp.album_id = ga.id
-       WHERE ga.is_active=1 GROUP BY ga.id ORDER BY ga.created_at DESC`),
-  ]);
+  const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
+  const campus = req.query.campus || '';
+  const campusFilter = campus ? ' AND (ga.campus=? OR ga.campus="all")' : '';
+  const campusParam  = campus ? [campus] : [];
+
+  const albums = await q(
+    `SELECT ga.*, COUNT(gp.id) AS photo_count
+     FROM gallery_albums ga LEFT JOIN gallery_photos gp ON gp.album_id = ga.id
+     WHERE ga.is_active=1${campusFilter} GROUP BY ga.id ORDER BY ga.created_at DESC`,
+    campusParam
+  );
   res.render('main/gallery', {
     title: `Gallery | ${settings.site_name || 'GTimes'}`,
     settings, categories, albums,
+    activeCampus: campus, campuses: CAMPUSES,
   });
 };
 
@@ -412,5 +446,5 @@ exports.rss = async (req, res) => {
 // ── Robots ───────────────────────────────────────────────
 exports.robots = (req, res) => {
   const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : '';
-  res.type('text/plain').send(`User-agent: *\nDisallow: /api/\nSitemap: ${domain}/sitemap.xml\n`);
+  res.type('text/plain').send(`User-agent: *\nDisallow: /api/\nDisallow: /admin/\nSitemap: ${domain}/sitemap.xml\n`);
 };

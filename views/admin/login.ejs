@@ -20,7 +20,7 @@
     <div class="gt-alert gt-alert-error" style="margin-bottom:1.25rem"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
     <% } %>
 
-    <form action="/login" method="POST" class="gt-login-form">
+    <form action="/admin/login" method="POST" class="gt-login-form">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="gt-form-group">
         <label><i class="fas fa-user"></i> Username</label>
@@ -36,7 +36,7 @@
     </form>
 
     <p style="text-align:center;margin-top:1.5rem;font-size:.8rem;color:var(--gt-gray)">
-      <a href="/" style="color:var(--gt-gray)"><i class="fas fa-arrow-left"></i> Back to GTimes</a>
+      <a href="/admin" style="color:var(--gt-gray)"><i class="fas fa-arrow-left"></i> Back to GTimes</a>
     </p>
   </div>
 </body>

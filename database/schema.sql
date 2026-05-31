@@ -46,10 +46,11 @@ CREATE TABLE IF NOT EXISTS articles (
   cover_image  VARCHAR(300) DEFAULT NULL,
   category_id  INT DEFAULT NULL,
   author_name  VARCHAR(200) DEFAULT 'GTimes Staff',
-  status       ENUM('draft','published') DEFAULT 'draft',
+  status       ENUM('draft','review','published') DEFAULT 'draft',
   featured     TINYINT(1) DEFAULT 0,
   views        INT DEFAULT 0,
   published_at DATETIME DEFAULT NULL,
+  scheduled_at DATETIME DEFAULT NULL,
   created_by   INT DEFAULT NULL,
   created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -180,6 +181,8 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
 -- ALTER TABLE articles ADD COLUMN IF NOT EXISTS content_te LONGTEXT DEFAULT NULL AFTER content_hi;
 -- ALTER TABLE admins ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT NULL AFTER name;
 -- ALTER TABLE admins ADD COLUMN IF NOT EXISTS avatar VARCHAR(300) DEFAULT NULL AFTER bio;
+-- ALTER TABLE articles ADD COLUMN IF NOT EXISTS scheduled_at DATETIME DEFAULT NULL AFTER published_at;
+-- ALTER TABLE articles MODIFY COLUMN status ENUM('draft','review','published') DEFAULT 'draft';
 
 -- Google Reviews cache
 CREATE TABLE IF NOT EXISTS google_reviews (
@@ -202,4 +205,5 @@ INSERT IGNORE INTO settings (setting_key, value) VALUES
   ('instagram',        ''),
   ('youtube',          ''),
   ('twitter',          ''),
+  ('whatsapp',         ''),
   ('breaking_news',    '');

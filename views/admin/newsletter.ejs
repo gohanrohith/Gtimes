@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -15,39 +15,94 @@
   <%- include('../partials/admin-sidebar') %>
   <main class="gt-admin-main">
     <div class="gt-admin-page-header">
-      <h1>Newsletter Subscribers</h1>
-      <a href="/newsletter/export.csv" class="btn btn-outline"><i class="fas fa-download"></i> Export CSV</a>
+      <h1>Newsletter</h1>
+      <a href="/admin/newsletter/export.csv" class="btn btn-outline"><i class="fas fa-download"></i> Export CSV</a>
     </div>
 
-    <div class="gt-admin-card">
-      <div style="margin-bottom:1rem;font-size:.88rem;color:var(--gt-gray)">
-        <strong style="color:var(--gt-dark)"><%= subscribers.length %></strong> subscriber<%= subscribers.length!==1?'s':'' %> total
+    <% if (success) { %>
+    <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
+    <% } %>
+    <% if (error) { %>
+    <div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+    <% } %>
+
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:1.5rem;align-items:start">
+
+      <!-- Compose & Send -->
+      <div class="gt-admin-card">
+        <h3 style="font-size:.9rem;font-weight:700;margin-bottom:1rem"><i class="fas fa-paper-plane" style="color:var(--gt-green)"></i> Compose Broadcast</h3>
+        <p style="font-size:.78rem;color:var(--gt-gray);margin-bottom:1rem">Sends to all <strong><%= subscribers.length %></strong> subscriber<%= subscribers.length!==1?'s':'' %>. Each email includes an unsubscribe link.</p>
+        <form action="/admin/newsletter/send" method="POST" id="broadcastForm">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="gt-form-group">
+            <label>Subject *</label>
+            <input type="text" name="subject" required placeholder="e.g. GTimes — May 2026 Highlights">
+          </div>
+          <div class="gt-form-group">
+            <label>Message Body *</label>
+            <div id="quillNewsletter" style="min-height:260px;background:#fff"></div>
+            <input type="hidden" name="html_body" id="inputNewsletterBody">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" <%= subscribers.length===0?'disabled':'' %>>
+            <i class="fas fa-paper-plane"></i> Send to <%= subscribers.length %> Subscriber<%= subscribers.length!==1?'s':'' %>
+          </button>
+          <% if (subscribers.length === 0) { %>
+          <p style="font-size:.75rem;color:var(--gt-gray);margin-top:.5rem;text-align:center">No subscribers yet.</p>
+          <% } %>
+        </form>
       </div>
-      <% if (subscribers.length > 0) { %>
-      <table class="gt-admin-table">
-        <thead><tr><th>Email</th><th>Name</th><th>Subscribed</th><th></th></tr></thead>
-        <tbody>
-          <% subscribers.forEach(s => { %>
-          <tr>
-            <td><%= s.email %></td>
-            <td><%= s.name || '—' %></td>
-            <td><%= new Date(s.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
-            <td>
-              <form method="POST" action="/newsletter/<%= s.id %>/delete" style="display:inline" onsubmit="return confirm('Remove this subscriber?')">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-              </form>
-            </td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
-      <% } else { %>
-      <div class="gt-empty"><i class="fas fa-envelope"></i><p>No subscribers yet.</p></div>
-      <% } %>
+
+      <!-- Subscriber list -->
+      <div class="gt-admin-card">
+        <div style="margin-bottom:1rem;font-size:.88rem;color:var(--gt-gray)">
+          <strong style="color:var(--gt-dark)"><%= subscribers.length %></strong> subscriber<%= subscribers.length!==1?'s':'' %>
+        </div>
+        <% if (subscribers.length > 0) { %>
+        <div style="max-height:420px;overflow-y:auto">
+          <table class="gt-admin-table" style="font-size:.82rem">
+            <thead><tr><th>Email</th><th>Name</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+              <% subscribers.forEach(s => { %>
+              <tr>
+                <td style="word-break:break-all"><%= s.email %></td>
+                <td><%= s.name || '—' %></td>
+                <td style="white-space:nowrap"><%= new Date(s.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></td>
+                <td>
+                  <form method="POST" action="/admin/newsletter/<%= s.id %>/delete" style="display:inline">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" title="Remove subscriber"><i class="fas fa-trash"></i></button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } else { %>
+        <div class="gt-empty"><i class="fas fa-envelope"></i><p>No subscribers yet.</p></div>
+        <% } %>
+      </div>
+
     </div>
   </main>
 </div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css">
+<script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script src="/js/admin.js"></script>
+<script>
+const quillNL = new Quill('#quillNewsletter', {
+  theme: 'snow',
+  modules: { toolbar: [
+    [{ header: [2, 3, false] }],
+    ['bold', 'italic', 'underline'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['link'],
+    ['clean']
+  ]}
+});
+document.getElementById('broadcastForm').addEventListener('submit', function() {
+  document.getElementById('inputNewsletterBody').value = quillNL.root.innerHTML;
+});
+</script>
 </body>
 </html>

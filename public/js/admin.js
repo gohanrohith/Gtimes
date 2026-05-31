@@ -44,10 +44,17 @@ document.querySelectorAll('.gt-admin-link').forEach(link => {
   }
 });
 
-// Confirm deletes
+// Confirm deletes — forms with data-confirm attribute
 document.querySelectorAll('[data-confirm]').forEach(el => {
   el.addEventListener('submit', e => {
     if (!confirm(el.dataset.confirm || 'Are you sure?')) e.preventDefault();
+  });
+});
+
+// Confirm deletes — buttons with gt-confirm-delete class
+document.querySelectorAll('.gt-confirm-delete').forEach(btn => {
+  btn.addEventListener('click', e => {
+    if (!confirm('Are you sure? This cannot be undone.')) e.preventDefault();
   });
 });
 

@@ -16,7 +16,7 @@
   <main class="gt-admin-main">
     <div class="gt-admin-page-header">
       <h1>Events</h1>
-      <a href="/events/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Event</a>
+      <a href="/admin/events/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Event</a>
     </div>
 
     <% if (success) { %>
@@ -48,8 +48,8 @@
             <td style="font-size:.85rem"><%= ev.location || '—' %></td>
             <td><span class="gt-badge <%= ev.status==='upcoming'?'gt-badge-success':ev.status==='ongoing'?'gt-badge-warn':'gt-badge-muted' %>"><%= ev.status %></span></td>
             <td style="text-align:right;white-space:nowrap">
-              <a href="/events/<%= ev.id %>/edit" class="btn btn-xs btn-outline" title="Edit"><i class="fas fa-pen"></i></a>
-              <form action="/events/<%= ev.id %>/delete" method="POST" style="display:inline;margin-left:4px">
+              <a href="/admin/events/<%= ev.id %>/edit" class="btn btn-xs btn-outline" title="Edit"><i class="fas fa-pen"></i></a>
+              <form action="/admin/events/<%= ev.id %>/delete" method="POST" style="display:inline;margin-left:4px">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" title="Delete"><i class="fas fa-trash"></i></button>
               </form>
@@ -59,7 +59,7 @@
         </tbody>
       </table>
       <% } else { %>
-      <div class="gt-empty"><i class="fas fa-calendar-alt"></i><p>No events yet. <a href="/events/new">Add one</a>.</p></div>
+      <div class="gt-empty"><i class="fas fa-calendar-alt"></i><p>No events yet. <a href="/admin/events/new">Add one</a>.</p></div>
       <% } %>
     </div>
   </main>

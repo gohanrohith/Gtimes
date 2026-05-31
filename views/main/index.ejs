@@ -126,6 +126,21 @@
             <% }) } %>
           </div>
 
+          <% if (trending && trending.length > 0) { %>
+          <div class="gt-sidebar-section">
+            <h4><i class="fas fa-fire" style="color:var(--gt-red);margin-right:.3rem"></i> Most Read</h4>
+            <% trending.forEach((a, i) => { %>
+            <a href="/article/<%= a.slug %>" style="display:flex;gap:.6rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--gt-light);text-decoration:none">
+              <span style="font-size:1.1rem;font-weight:900;color:var(--gt-light);min-width:20px;text-align:center"><%= i+1 %></span>
+              <div>
+                <p style="font-size:.83rem;font-weight:600;color:var(--gt-dark);line-height:1.4;margin:0"><%= a.title.substring(0,65) %><%= a.title.length>65?'…':'' %></p>
+                <span style="font-size:.72rem;color:var(--gt-gray)"><i class="fas fa-eye"></i> <%= a.views %> views</span>
+              </div>
+            </a>
+            <% }) %>
+          </div>
+          <% } %>
+
           <% if (videos && videos.length > 0) { %>
           <div class="gt-sidebar-section">
             <h4>Recent Videos</h4>

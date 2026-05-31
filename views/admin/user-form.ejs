@@ -16,7 +16,7 @@
   <main class="gt-admin-main">
     <div class="gt-admin-page-header">
       <h1><%= user ? 'Edit User' : 'New User' %></h1>
-      <a href="/users" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+      <a href="/admin/users" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
     </div>
 
     <% if (error) { %>
@@ -24,7 +24,7 @@
     <% } %>
 
     <div class="gt-admin-card" style="max-width:480px">
-      <form action="<%= user ? '/users/'+user.id+'/edit' : '/users/new' %>" method="POST">
+      <form action="<%= user ? '/admin/users/'+user.id+'/edit' : '/admin/users/new' %>" method="POST">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="gt-form-group">
           <label>Full Name *</label>

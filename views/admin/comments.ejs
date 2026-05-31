@@ -20,12 +20,12 @@
 
     <!-- Tabs -->
     <div class="gt-tab-bar" style="margin-bottom:1.25rem">
-      <a href="/comments" class="gt-tab <%= !filter ? 'active' : '' %>">All</a>
-      <a href="/comments?status=pending" class="gt-tab <%= filter==='pending' ? 'active' : '' %>">
+      <a href="/admin/comments" class="gt-tab <%= !filter ? 'active' : '' %>">All</a>
+      <a href="/admin/comments?status=pending" class="gt-tab <%= filter==='pending' ? 'active' : '' %>">
         Pending <% if (pendingCount) { %><span class="gt-tab-badge"><%= pendingCount %></span><% } %>
       </a>
-      <a href="/comments?status=approved" class="gt-tab <%= filter==='approved' ? 'active' : '' %>">Approved</a>
-      <a href="/comments?status=spam" class="gt-tab <%= filter==='spam' ? 'active' : '' %>">Spam</a>
+      <a href="/admin/comments?status=approved" class="gt-tab <%= filter==='approved' ? 'active' : '' %>">Approved</a>
+      <a href="/admin/comments?status=spam" class="gt-tab <%= filter==='spam' ? 'active' : '' %>">Spam</a>
     </div>
 
     <% if (success) { %>
@@ -62,18 +62,18 @@
             <td><span class="gt-badge <%= c.status==='approved'?'gt-badge-success':c.status==='spam'?'gt-badge-danger':'gt-badge-warn' %>"><%= c.status %></span></td>
             <td style="text-align:right;white-space:nowrap">
               <% if (c.status !== 'approved') { %>
-              <form action="/comments/<%= c.id %>/approve" method="POST" style="display:inline">
+              <form action="/admin/comments/<%= c.id %>/approve" method="POST" style="display:inline">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="btn btn-xs btn-success" title="Approve"><i class="fas fa-check"></i></button>
               </form>
               <% } %>
               <% if (c.status !== 'spam') { %>
-              <form action="/comments/<%= c.id %>/spam" method="POST" style="display:inline;margin-left:4px">
+              <form action="/admin/comments/<%= c.id %>/spam" method="POST" style="display:inline;margin-left:4px">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="btn btn-xs btn-warn" title="Mark Spam"><i class="fas fa-ban"></i></button>
               </form>
               <% } %>
-              <form action="/comments/<%= c.id %>/delete" method="POST" style="display:inline;margin-left:4px">
+              <form action="/admin/comments/<%= c.id %>/delete" method="POST" style="display:inline;margin-left:4px">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" title="Delete"><i class="fas fa-trash"></i></button>
               </form>

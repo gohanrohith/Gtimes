@@ -1,8 +1,5 @@
 module.exports = function siteMiddleware(req, res, next) {
-  const mainDomain = process.env.MAIN_DOMAIN || 'lvh.me';
-  const hostname   = req.hostname;
-
-  req.site = hostname === `admin.${mainDomain}` ? 'admin' : 'main';
+  req.site = req.path.startsWith('/admin') ? 'admin' : 'main';
 
   res.locals.site          = req.site;
   res.locals.currentYear   = new Date().getFullYear();

@@ -51,6 +51,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/css/main.css">
   <style>
+    #gt-progress-bar { position:fixed;top:0;left:0;height:3px;background:var(--gt-green,#00663A);z-index:9999;width:0%;transition:width .1s linear; }
+  </style>
+  <style>
     .gt-lang-btn {
       padding:.3rem .85rem; border:1.5px solid var(--gt-green,#00663A); border-radius:20px;
       background:transparent; color:var(--gt-green,#00663A); font-family:inherit;
@@ -81,7 +84,14 @@
   </style>
 </head>
 <body>
+<div id="gt-progress-bar"></div>
 <%- include('../partials/nav') %>
+<% if (typeof isPreview !== 'undefined' && isPreview) { %>
+<div style="background:#e67e22;color:#fff;text-align:center;padding:.6rem 1rem;font-size:.85rem;font-weight:600;position:sticky;top:0;z-index:100">
+  <i class="fas fa-eye"></i> Preview Mode — This article is not published yet.
+  <a href="/admin/articles/<%= article.id %>/edit" style="color:#fff;text-decoration:underline;margin-left:1rem">Back to Editor</a>
+</div>
+<% } %>
 <div class="gt-breadcrumb">
   <div class="container">
     <a href="/">Home</a><span>/</span>
@@ -155,7 +165,29 @@
           <button onclick="window.print()" class="gt-share-btn" style="background:#888;color:#fff;margin-left:auto"><i class="fas fa-print"></i> Print</button>
         </div>
 
+        <!-- Author bio box -->
+        <% if (article.author_username && (article.author_bio || article.author_avatar)) { %>
+        <div style="margin-top:2rem;padding:1.25rem;background:var(--gt-off);border-radius:var(--gt-radius-lg);display:flex;gap:1rem;align-items:flex-start">
+          <div style="flex-shrink:0">
+            <% if (article.author_avatar) { %>
+            <img src="/uploads/avatars/<%= article.author_avatar %>" alt="<%= article.author_name %>" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--gt-green)">
+            <% } else { %>
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--gt-green);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;color:#fff"><%= (article.author_name||'?').charAt(0).toUpperCase() %></div>
+            <% } %>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.72rem;color:var(--gt-gray);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:.2rem">Written by</div>
+            <a href="/author/<%= article.author_username %>" style="font-size:1rem;font-weight:800;color:var(--gt-dark);text-decoration:none"><%= article.author_name %></a>
+            <% if (article.author_bio) { %>
+            <p style="margin:.4rem 0 .6rem;font-size:.85rem;color:var(--gt-gray);line-height:1.6"><%= article.author_bio %></p>
+            <% } %>
+            <a href="/author/<%= article.author_username %>" style="font-size:.78rem;font-weight:600;color:var(--gt-green)">More articles <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <% } %>
+
         <!-- Comments section -->
+        <% const commentsEnabled = settings?.comments_enabled !== '0'; %>
         <div style="margin-top:3rem;padding-top:2rem;border-top:2px solid var(--gt-light)">
           <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:1.5rem">Comments (<%= comments.length %>)</h2>
 
@@ -173,13 +205,14 @@
               <span class="gt-comment-name"><i class="fas fa-user-circle" style="color:var(--gt-green)"></i> <%= c.name %></span>
               <span class="gt-comment-date"><%= new Date(c.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %></span>
             </div>
-            <p><%- c.content %></p>
+            <p><%= c.content %></p>
           </div>
           <% }) %>
           <% } else { %>
           <p style="color:var(--gt-gray);font-size:.9rem;margin-bottom:1.5rem">Be the first to comment on this article.</p>
           <% } %>
 
+          <% if (commentsEnabled) { %>
           <div style="background:var(--gt-off);border-radius:var(--gt-radius-lg);padding:1.5rem;margin-top:1.5rem">
             <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem">Leave a Comment</h3>
             <form action="/article/<%= article.slug %>/comment" method="POST">
@@ -190,9 +223,12 @@
               </div>
               <div class="gt-form-group"><label>Comment *</label><textarea name="content" required placeholder="Share your thoughts..." style="min-height:100px"></textarea></div>
               <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Comment</button>
+              <% if (settings?.comments_moderation !== '0') { %>
               <small style="display:block;margin-top:.5rem;color:var(--gt-gray);font-size:.75rem">Comments are moderated and will appear after review.</small>
+              <% } %>
             </form>
           </div>
+          <% } %>
         </div>
       </article>
 
@@ -225,6 +261,19 @@
 <%- include('../partials/footer') %>
 <script src="/js/main.js"></script>
 <script>
+(function() {
+  const bar = document.getElementById('gt-progress-bar');
+  if (!bar) return;
+  function update() {
+    const el = document.documentElement;
+    const scrolled = el.scrollTop || document.body.scrollTop;
+    const total = el.scrollHeight - el.clientHeight;
+    bar.style.width = (total > 0 ? Math.min(100, (scrolled / total) * 100) : 0) + '%';
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+
 function switchLang(lang) {
   ['en','hi','te'].forEach(l => {
     const el = document.getElementById('content-' + l);

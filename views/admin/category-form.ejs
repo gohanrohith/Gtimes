@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/emblem.png">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="gt-admin">
+<%- include('../partials/admin-topbar') %>
+<div class="gt-admin-layout">
+  <%- include('../partials/admin-sidebar') %>
+  <main class="gt-admin-main">
+    <div class="gt-admin-page-header">
+      <h1><%= category ? 'Edit Category' : 'New Category' %></h1>
+      <a href="/admin/categories" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <% if (error) { %><div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
+
+    <div class="gt-admin-card" style="max-width:520px">
+      <form action="<%= category ? '/admin/categories/'+category.id+'/edit' : '/admin/categories/new' %>" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="gt-form-group">
+          <label>Name *</label>
+          <input type="text" name="name" value="<%= category?.name||'' %>" required placeholder="e.g. Sports">
+        </div>
+        <div class="gt-form-group">
+          <label>Description</label>
+          <textarea name="description" rows="2" placeholder="Brief description…"><%= category?.description||'' %></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="gt-form-group">
+            <label>Colour</label>
+            <div style="display:flex;align-items:center;gap:.75rem">
+              <input type="color" name="color" value="<%= category?.color||'#00663A' %>" style="width:48px;height:36px;padding:2px;border:1px solid var(--gt-light);border-radius:6px;cursor:pointer">
+              <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                <% ['#00663A','#1F1B76','#e63946','#0077b6','#e67e22','#B5D236'].forEach(c => { %>
+                <div onclick="document.querySelector('[name=color]').value='<%= c %>'" style="width:20px;height:20px;border-radius:50%;background:<%= c %>;cursor:pointer;border:2px solid <%= category?.color===c?'#333':'transparent' %>"></div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+          <div class="gt-form-group">
+            <label>Sort Order <span style="font-weight:400;color:var(--gt-gray)">(lower = first)</span></label>
+            <input type="number" name="sort_order" value="<%= category?.sort_order||0 %>" min="0" style="width:100%">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> <%= category ? 'Save Changes' : 'Create Category' %></button>
+      </form>
+    </div>
+  </main>
+</div>
+<script src="/js/admin.js"></script>
+</body>
+</html>

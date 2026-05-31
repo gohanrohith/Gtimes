@@ -19,14 +19,31 @@ router.use((req, res, next) => {
 // Dashboard
 router.get('/', ctrl.dashboard);
 
+// Analytics
+router.get('/analytics', ctrl.analytics);
+
+// Categories (super + editor)
+router.get('/categories',               ctrl.categoriesList);
+router.get('/categories/new',           ctrl.categoryForm);
+router.post('/categories/new',          ctrl.createCategory);
+router.get('/categories/:id/edit',      ctrl.editCategoryForm);
+router.post('/categories/:id/edit',     ctrl.updateCategory);
+router.post('/categories/:id/delete',   ctrl.deleteCategory);
+
+// Tags
+router.get('/tags',             ctrl.tagsList);
+router.post('/tags/:id/delete', ctrl.deleteTag);
+
 // Articles
 router.get('/articles',               ctrl.articlesList);
 router.get('/articles/new',           ctrl.articleForm);
 router.post('/articles/new',          ctrl.createArticle);
+router.get('/articles/:id/preview',   ctrl.previewArticle);
 router.get('/articles/:id/edit',      ctrl.editArticleForm);
 router.post('/articles/:id/edit',     ctrl.updateArticle);
-router.post('/articles/:id/publish',  ctrl.publishArticle);
-router.post('/articles/:id/unpublish',ctrl.unpublishArticle);
+router.post('/articles/:id/submit-review', ctrl.submitForReview);
+router.post('/articles/:id/publish',       ctrl.publishArticle);
+router.post('/articles/:id/unpublish',     ctrl.unpublishArticle);
 router.post('/articles/:id/delete',   ctrl.deleteArticle);
 
 // Events
@@ -38,13 +55,15 @@ router.post('/events/:id/edit',   ctrl.updateEvent);
 router.post('/events/:id/delete', ctrl.deleteEvent);
 
 // Gallery
-router.get('/gallery',                    ctrl.galleryList);
-router.get('/gallery/new',                ctrl.albumForm);
-router.post('/gallery/new',               ctrl.createAlbum);
-router.get('/gallery/:id/upload',         ctrl.albumUploadForm);
-router.post('/gallery/:id/upload',        ctrl.uploadPhotos);
-router.post('/gallery/:id/delete',        ctrl.deleteAlbum);
-router.post('/gallery/photo/:id/delete',  ctrl.deletePhoto);
+router.get('/gallery',                       ctrl.galleryList);
+router.get('/gallery/new',                   ctrl.albumForm);
+router.post('/gallery/new',                  ctrl.createAlbum);
+router.get('/gallery/:id/upload',            ctrl.albumUploadForm);
+router.post('/gallery/:id/upload',           ctrl.uploadPhotos);
+router.post('/gallery/:id/delete',           ctrl.deleteAlbum);
+router.post('/gallery/:id/cover/:photoId',   ctrl.setAlbumCover);
+router.post('/gallery/photo/:id/caption',    ctrl.updatePhotoCaption);
+router.post('/gallery/photo/:id/delete',     ctrl.deletePhoto);
 
 // Videos
 router.get('/videos',             ctrl.videosList);
@@ -59,6 +78,8 @@ router.post('/comments/:id/delete',      ctrl.deleteComment);
 
 // Newsletter (super + editor)
 router.get('/newsletter',                ctrl.newsletterList);
+router.get('/newsletter/export.csv',     ctrl.exportSubscribers);
+router.post('/newsletter/send',          ctrl.sendNewsletter);
 router.post('/newsletter/:id/delete',    ctrl.deleteSubscriber);
 
 // Users management (super only)

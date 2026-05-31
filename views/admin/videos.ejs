@@ -28,7 +28,7 @@
     <!-- Add video -->
     <div class="gt-admin-card" style="margin-bottom:1.5rem">
       <h3 style="font-size:.9rem;font-weight:700;margin-bottom:1rem">Add YouTube Video</h3>
-      <form action="/videos/new" method="POST">
+      <form action="/admin/videos/new" method="POST">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
           <div class="gt-form-group">
@@ -40,9 +40,22 @@
             <input type="url" name="youtube_url" required placeholder="https://www.youtube.com/watch?v=...">
           </div>
         </div>
-        <div class="gt-form-group">
-          <label>Description</label>
-          <textarea name="description" rows="2" placeholder="Brief description…"></textarea>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="gt-form-group">
+            <label>Description</label>
+            <textarea name="description" rows="2" placeholder="Brief description…"></textarea>
+          </div>
+          <div class="gt-form-group">
+            <label>Category</label>
+            <select name="category">
+              <option value="general">General</option>
+              <option value="sports">Sports</option>
+              <option value="events">Events</option>
+              <option value="academic">Academic</option>
+              <option value="achievements">Achievements</option>
+              <option value="campus life">Campus Life</option>
+            </select>
+          </div>
         </div>
         <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Video</button>
       </form>
@@ -79,7 +92,7 @@
               <% if (v.youtube_id) { %>
               <a href="https://www.youtube.com/watch?v=<%= v.youtube_id %>" target="_blank" class="btn btn-xs btn-outline" title="Watch on YouTube"><i class="fab fa-youtube"></i></a>
               <% } %>
-              <form action="/videos/<%= v.id %>/delete" method="POST" style="display:inline;margin-left:4px">
+              <form action="/admin/videos/<%= v.id %>/delete" method="POST" style="display:inline;margin-left:4px">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete" title="Delete"><i class="fas fa-trash"></i></button>
               </form>

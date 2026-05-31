@@ -4,19 +4,25 @@
     <span style="display:block;font-size:.7rem;color:#aaa;margin-top:2px">Admin Panel</span>
   </div>
   <nav class="gt-admin-nav">
-    <a href="/"           class="gt-admin-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-    <a href="/articles"   class="gt-admin-link"><i class="fas fa-newspaper"></i> Articles</a>
-    <a href="/events"     class="gt-admin-link"><i class="fas fa-calendar-alt"></i> Events</a>
-    <a href="/gallery"    class="gt-admin-link"><i class="fas fa-images"></i> Gallery</a>
-    <a href="/videos"     class="gt-admin-link"><i class="fas fa-video"></i> Videos</a>
-    <a href="/comments"   class="gt-admin-link"><i class="fas fa-comments"></i> Comments</a>
-    <a href="/newsletter" class="gt-admin-link"><i class="fas fa-envelope"></i> Newsletter</a>
+    <a href="/admin"           class="gt-admin-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="/admin/analytics"  class="gt-admin-link"><i class="fas fa-chart-bar"></i> Analytics</a>
+    <div class="gt-admin-divider"></div>
+    <a href="/admin/articles"   class="gt-admin-link"><i class="fas fa-newspaper"></i> Articles</a>
+    <a href="/admin/categories" class="gt-admin-link"><i class="fas fa-folder"></i> Categories</a>
+    <a href="/admin/tags"       class="gt-admin-link"><i class="fas fa-tags"></i> Tags</a>
+    <div class="gt-admin-divider"></div>
+    <a href="/admin/events"     class="gt-admin-link"><i class="fas fa-calendar-alt"></i> Events</a>
+    <a href="/admin/gallery"    class="gt-admin-link"><i class="fas fa-images"></i> Gallery</a>
+    <a href="/admin/videos"     class="gt-admin-link"><i class="fas fa-video"></i> Videos</a>
+    <div class="gt-admin-divider"></div>
+    <a href="/admin/comments"   class="gt-admin-link"><i class="fas fa-comments"></i> Comments</a>
+    <a href="/admin/newsletter" class="gt-admin-link"><i class="fas fa-envelope"></i> Newsletter</a>
     <div class="gt-admin-divider"></div>
     <% if (locals.adminRole === 'super') { %>
-    <a href="/users"      class="gt-admin-link"><i class="fas fa-users"></i> Users</a>
+    <a href="/admin/users"      class="gt-admin-link"><i class="fas fa-users"></i> Users</a>
     <% } %>
-    <a href="/profile"    class="gt-admin-link"><i class="fas fa-user-circle"></i> My Profile</a>
-    <a href="/settings"   class="gt-admin-link"><i class="fas fa-cog"></i> Settings</a>
-    <a href="/logout"     class="gt-admin-link gt-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <a href="/admin/profile"    class="gt-admin-link"><i class="fas fa-user-circle"></i> My Profile</a>
+    <a href="/admin/settings"   class="gt-admin-link"><i class="fas fa-cog"></i> Settings</a>
+    <a href="/admin/logout"     class="gt-admin-link gt-admin-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
   </nav>
 </aside>

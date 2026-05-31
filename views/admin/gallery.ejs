@@ -16,7 +16,7 @@
   <main class="gt-admin-main">
     <div class="gt-admin-page-header">
       <h1>Photo Gallery</h1>
-      <a href="/gallery/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Album</a>
+      <a href="/admin/gallery/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Album</a>
     </div>
 
     <% if (success) { %>
@@ -39,8 +39,8 @@
           <h4><%= album.title %></h4>
           <% if (album.description) { %><p><%= album.description.substring(0,60) %><%= album.description.length>60?'…':'' %></p><% } %>
           <div style="display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap">
-            <a href="/gallery/<%= album.id %>/upload" class="btn btn-xs btn-primary"><i class="fas fa-upload"></i> Upload Photos</a>
-            <form action="/gallery/<%= album.id %>/delete" method="POST" style="display:inline">
+            <a href="/admin/gallery/<%= album.id %>/upload" class="btn btn-xs btn-primary"><i class="fas fa-upload"></i> Upload Photos</a>
+            <form action="/admin/gallery/<%= album.id %>/delete" method="POST" style="display:inline">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <button type="submit" class="btn btn-xs btn-danger gt-confirm-delete"><i class="fas fa-trash"></i> Delete</button>
             </form>
@@ -50,7 +50,7 @@
       <% }) %>
     </div>
     <% } else { %>
-    <div class="gt-empty" style="margin-top:2rem"><i class="fas fa-images"></i><p>No albums yet. <a href="/gallery/new">Create one</a>.</p></div>
+    <div class="gt-empty" style="margin-top:2rem"><i class="fas fa-images"></i><p>No albums yet. <a href="/admin/gallery/new">Create one</a>.</p></div>
     <% } %>
   </main>
 </div>

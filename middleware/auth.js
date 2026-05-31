@@ -4,7 +4,7 @@ function requireAdmin(req, res, next) {
     res.locals.adminRole = req.session.adminRole;
     return next();
   }
-  res.redirect('/login');
+  res.redirect('/admin/login');
 }
 
 // Only super admins can access this route

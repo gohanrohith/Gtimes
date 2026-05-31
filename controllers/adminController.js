@@ -110,7 +110,7 @@ async function getArticleTags(articleId) {
 
 // ── Auth ───────────────────────────────────────────────
 exports.loginPage = (req, res) => {
-  if (req.session.adminId) return res.redirect('/');
+  if (req.session.adminId) return res.redirect('/admin');
   res.render('admin/login', { title: 'Admin Login | GTimes', error: null });
 };
 
@@ -122,24 +122,26 @@ exports.loginSubmit = async (req, res) => {
       req.session.adminId   = admin.id;
       req.session.adminName = admin.name;
       req.session.adminRole = admin.role;
-      return res.redirect('/');
+      return res.redirect('/admin');
     }
   } catch { /* DB not ready */ }
   res.render('admin/login', { title: 'Admin Login | GTimes', error: 'Invalid credentials' });
 };
 
-exports.logout = (req, res) => req.session.destroy(() => res.redirect('/login'));
+exports.logout = (req, res) => req.session.destroy(() => res.redirect('/admin/login'));
 
 // ── Dashboard ──────────────────────────────────────────
 exports.dashboard = async (req, res) => {
-  const [articles, pendingCommentCount, events, photos] = await Promise.all([
+  const [articles, pendingCommentCount, events, photos, reviewCount] = await Promise.all([
     q1('SELECT COUNT(*) AS c FROM articles WHERE status=?', ['published']),
     q1('SELECT COUNT(*) AS c FROM comments WHERE status=?', ['pending']),
     q1('SELECT COUNT(*) AS c FROM events'),
     q1('SELECT COUNT(*) AS c FROM gallery_photos'),
+    q1('SELECT COUNT(*) AS c FROM articles WHERE status=?', ['review']),
   ]);
   const recentArticles = await q(`SELECT a.*, c.name AS cat_name FROM articles a LEFT JOIN categories c ON a.category_id=c.id ORDER BY a.created_at DESC LIMIT 6`);
   const pendingComments = await q(`SELECT cm.*, a.title AS article_title, a.slug AS article_slug FROM comments cm JOIN articles a ON cm.article_id=a.id WHERE cm.status='pending' ORDER BY cm.created_at DESC LIMIT 5`);
+  const reviewArticles = await q(`SELECT a.*, adm.name AS creator_name FROM articles a LEFT JOIN admins adm ON a.created_by=adm.id WHERE a.status='review' ORDER BY a.updated_at DESC LIMIT 5`);
   res.render('admin/dashboard', {
     title: 'Dashboard | GTimes Admin',
     admin: { username: req.session.adminName },
@@ -148,8 +150,9 @@ exports.dashboard = async (req, res) => {
       pending_comments: pendingCommentCount?.c || 0,
       events: events?.c || 0,
       photos: photos?.c || 0,
+      review: reviewCount?.c || 0,
     },
-    recentArticles, pendingComments,
+    recentArticles, pendingComments, reviewArticles,
   });
 };
 
@@ -159,15 +162,14 @@ exports.articlesList = async (req, res) => {
   const page  = Math.max(1, parseInt(req.query.page) || 1);
   const limit = 20;
   const offset = (page - 1) * limit;
-  let sql = `SELECT a.*, c.name AS cat_name, c.color AS cat_color, u.username AS author_name
+  let sql = `SELECT a.*, c.name AS cat_name, c.color AS cat_color
              FROM articles a
              LEFT JOIN categories c ON a.category_id=c.id
-             LEFT JOIN admins u ON a.author_id=u.id
              WHERE 1=1`;
   const params = [];
   if (status) { sql += ' AND a.status=?'; params.push(status); }
   if (search) { sql += ' AND a.title LIKE ?'; params.push(`%${search}%`); }
-  const countSql = sql.replace('SELECT a.*, c.name AS cat_name, c.color AS cat_color, u.username AS author_name', 'SELECT COUNT(*) AS c');
+  const countSql = sql.replace('SELECT a.*, c.name AS cat_name, c.color AS cat_color', 'SELECT COUNT(*) AS c');
   sql += ` ORDER BY a.created_at DESC LIMIT ? OFFSET ?`;
   const [articles, total, categories] = await Promise.all([
     q(sql, [...params, limit, offset]),
@@ -181,6 +183,7 @@ exports.articlesList = async (req, res) => {
     filter: status || '', search: search || '',
     pagination: { page, totalPages },
     admin: { username: req.session.adminName },
+    error: req.query.error || null,
   });
 };
 
@@ -191,9 +194,9 @@ exports.articleForm = async (req, res) => {
 
 exports.createArticle = (req, res) => {
   articleUpload(req, res, async err => {
-    if (err) return res.redirect('/articles/new?error=' + encodeURIComponent(err.message));
-    const { title, excerpt, content, content_hi, content_te, category_id, author_name, featured } = req.body;
-    if (!title) return res.redirect('/articles/new?error=Title+is+required');
+    if (err) return res.redirect('/admin/articles/new?error=' + encodeURIComponent(err.message));
+    const { title, excerpt, content, content_hi, content_te, category_id, author_name, featured, scheduled_at } = req.body;
+    if (!title) return res.redirect('/admin/articles/new?error=Title+is+required');
 
     let cover = null;
     if (req.files?.[0]) {
@@ -202,14 +205,18 @@ exports.createArticle = (req, res) => {
       else { fs.unlinkSync(fp); }
     }
     const slug = await makeSlug(title, 'articles');
-    const result = await q(`INSERT INTO articles (title, slug, excerpt, content, content_hi, content_te, cover_image, category_id, author_name, featured, created_by)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    const schedDate = scheduled_at ? new Date(scheduled_at) : null;
+    const validSched = schedDate && !isNaN(schedDate) ? schedDate : null;
+    const result = await q(
+      `INSERT INTO articles (title, slug, excerpt, content, content_hi, content_te, cover_image, category_id, author_name, featured, scheduled_at, created_by)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
       [title, slug, excerpt || null, content || null, content_hi || null, content_te || null,
-       cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0, req.session.adminId]);
+       cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0,
+       validSched, req.session.adminId]);
     if (result.insertId && req.body.tags) {
       await saveTags(result.insertId, req.body.tags);
     }
-    res.redirect('/articles');
+    res.redirect('/admin/articles');
   });
 };
 
@@ -219,42 +226,59 @@ exports.editArticleForm = async (req, res) => {
     getCategories(),
     getArticleTags(req.params.id),
   ]);
-  if (!article) return res.redirect('/articles');
+  if (!article) return res.redirect('/admin/articles');
   const articleTags = tags.map(t => t.name).join(', ');
   res.render('admin/article-form', { title: 'Edit Article | GTimes Admin', article, categories, articleTags, admin: { username: req.session.adminName } });
 };
 
 exports.updateArticle = (req, res) => {
   articleUpload(req, res, async err => {
-    if (err) return res.redirect(`/articles/${req.params.id}/edit?error=` + encodeURIComponent(err.message));
+    if (err) return res.redirect(`/admin/articles/${req.params.id}/edit?error=` + encodeURIComponent(err.message));
     const { title, excerpt, content, content_hi, content_te, category_id, author_name, featured } = req.body;
     const article = await q1('SELECT * FROM articles WHERE id=?', [req.params.id]);
-    if (!article) return res.redirect('/articles');
+    if (!article) return res.redirect('/admin/articles');
 
     let cover = article.cover_image;
+    if (req.body.remove_cover === '1' && cover) {
+      const old = path.join(__dirname, '../public/uploads/articles', cover);
+      if (fs.existsSync(old)) fs.unlinkSync(old);
+      cover = null;
+    }
     if (req.files?.[0]) {
       const fp = path.join(__dirname, '../public/uploads/articles', req.files[0].filename);
       if (isValidImage(fp)) { cover = req.files[0].filename; }
       else { fs.unlinkSync(fp); }
     }
     const slug = title !== article.title ? await makeSlug(title, 'articles', article.id) : article.slug;
-    await q(`UPDATE articles SET title=?, slug=?, excerpt=?, content=?, content_hi=?, content_te=?, cover_image=?, category_id=?, author_name=?, featured=? WHERE id=?`,
+    const { scheduled_at } = req.body;
+    const schedDate = scheduled_at ? new Date(scheduled_at) : null;
+    const validSched = schedDate && !isNaN(schedDate) ? schedDate : null;
+    await q(`UPDATE articles SET title=?, slug=?, excerpt=?, content=?, content_hi=?, content_te=?, cover_image=?, category_id=?, author_name=?, featured=?, scheduled_at=? WHERE id=?`,
       [title, slug, excerpt || null, content || null, content_hi || null, content_te || null,
-       cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0, req.params.id]);
+       cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0,
+       validSched, req.params.id]);
     if (req.body.tags !== undefined) {
       await saveTags(req.params.id, req.body.tags);
     }
-    res.redirect('/articles');
+    res.redirect('/admin/articles');
   });
 };
 
+exports.submitForReview = async (req, res) => {
+  await q(`UPDATE articles SET status='review' WHERE id=?`, [req.params.id]);
+  res.redirect('/admin/articles');
+};
+
 exports.publishArticle = async (req, res) => {
+  if (!['editor', 'super'].includes(req.session.adminRole)) {
+    return res.redirect('/articles?error=Only+editors+and+super+admins+can+publish');
+  }
   const article = await q1(
     `SELECT a.*, c.name AS cat_name FROM articles a LEFT JOIN categories c ON a.category_id=c.id WHERE a.id=?`,
     [req.params.id]);
-  if (!article) return res.redirect('/articles');
+  if (!article) return res.redirect('/admin/articles');
   const now = new Date();
-  await q(`UPDATE articles SET status='published', published_at=COALESCE(published_at,?) WHERE id=?`, [now, article.id]);
+  await q(`UPDATE articles SET status='published', published_at=COALESCE(published_at,?), scheduled_at=NULL WHERE id=?`, [now, article.id]);
   notifyGreenwood('article', {
     gtimes_id:   String(article.id),
     title:       article.title,
@@ -264,17 +288,17 @@ exports.publishArticle = async (req, res) => {
     cover_image: article.cover_image ? `https://gtimes.in/uploads/articles/${article.cover_image}` : null,
     published_at: now.toISOString(),
   });
-  res.redirect('/articles');
+  res.redirect('/admin/articles');
 };
 
 exports.unpublishArticle = async (req, res) => {
-  await q(`UPDATE articles SET status='draft' WHERE id=?`, [req.params.id]);
-  res.redirect('/articles');
+  await q(`UPDATE articles SET status='draft', scheduled_at=NULL WHERE id=?`, [req.params.id]);
+  res.redirect('/admin/articles');
 };
 
 exports.deleteArticle = async (req, res) => {
   await q('DELETE FROM articles WHERE id=?', [req.params.id]);
-  res.redirect('/articles');
+  res.redirect('/admin/articles');
 };
 
 // ── Events ─────────────────────────────────────────────
@@ -289,9 +313,9 @@ exports.eventForm = async (req, res) => {
 
 exports.createEvent = (req, res) => {
   eventUpload(req, res, async err => {
-    if (err) return res.redirect('/events/new?error=' + encodeURIComponent(err.message));
+    if (err) return res.redirect('/admin/events/new?error=' + encodeURIComponent(err.message));
     const { title, description, location, event_date, event_time, campus, status, featured } = req.body;
-    if (!title) return res.redirect('/events/new?error=Title+is+required');
+    if (!title) return res.redirect('/admin/events/new?error=Title+is+required');
     let cover = null;
     if (req.files?.[0]) {
       const fp = path.join(__dirname, '../public/uploads/events', req.files[0].filename);
@@ -312,21 +336,21 @@ exports.createEvent = (req, res) => {
       event_date:  event_date || null,
       campus:      campus || 'all',
     });
-    res.redirect('/events');
+    res.redirect('/admin/events');
   });
 };
 
 exports.editEventForm = async (req, res) => {
   const event = await q1('SELECT * FROM events WHERE id=?', [req.params.id]);
-  if (!event) return res.redirect('/events');
+  if (!event) return res.redirect('/admin/events');
   res.render('admin/event-form', { title: 'Edit Event | GTimes Admin', event });
 };
 
 exports.updateEvent = (req, res) => {
   eventUpload(req, res, async err => {
-    if (err) return res.redirect(`/events/${req.params.id}/edit?error=` + encodeURIComponent(err.message));
+    if (err) return res.redirect(`/admin/events/${req.params.id}/edit?error=` + encodeURIComponent(err.message));
     const ev = await q1('SELECT * FROM events WHERE id=?', [req.params.id]);
-    if (!ev) return res.redirect('/events');
+    if (!ev) return res.redirect('/admin/events');
     const { title, description, location, event_date, event_time, campus, status, featured } = req.body;
     let cover = ev.cover_image;
     if (req.files?.[0]) {
@@ -337,13 +361,13 @@ exports.updateEvent = (req, res) => {
     await q(`UPDATE events SET title=?, description=?, cover_image=?, location=?, event_date=?, event_time=?, campus=?, status=?, featured=? WHERE id=?`,
       [title, description || null, cover, location || null, event_date || null,
        event_time || null, campus || 'all', status || 'upcoming', featured === '1' ? 1 : 0, ev.id]);
-    res.redirect('/events');
+    res.redirect('/admin/events');
   });
 };
 
 exports.deleteEvent = async (req, res) => {
   await q('DELETE FROM events WHERE id=?', [req.params.id]);
-  res.redirect('/events');
+  res.redirect('/admin/events');
 };
 
 // ── Gallery ────────────────────────────────────────────
@@ -360,23 +384,23 @@ exports.albumForm = (req, res) => {
 
 exports.albumUploadForm = async (req, res) => {
   const album = await q1('SELECT * FROM gallery_albums WHERE id=? AND is_active=1', [req.params.id]);
-  if (!album) return res.redirect('/gallery');
+  if (!album) return res.redirect('/admin/gallery');
   const photos = await q('SELECT * FROM gallery_photos WHERE album_id=? ORDER BY sort_order ASC, created_at ASC', [album.id]);
   res.render('admin/album-form', { title: `Upload Photos | ${album.title} | GTimes Admin`, album, photos });
 };
 
 exports.createAlbum = async (req, res) => {
   const { title, description, campus } = req.body;
-  if (!title) return res.redirect('/gallery/new?error=Title+required');
+  if (!title) return res.redirect('/admin/gallery/new?error=Title+required');
   const slug = await makeSlug(title, 'gallery_albums');
   await q(`INSERT INTO gallery_albums (title, slug, description, campus, created_by) VALUES (?,?,?,?,?)`,
     [title, slug, description || null, campus || 'all', req.session.adminId]);
-  res.redirect('/gallery');
+  res.redirect('/admin/gallery');
 };
 
 exports.uploadPhotos = (req, res) => {
   galleryUpload(req, res, async err => {
-    if (err) return res.redirect(`/gallery?error=` + encodeURIComponent(err.message));
+    if (err) return res.redirect(`/admin/gallery?error=` + encodeURIComponent(err.message));
     const albumId = req.params.id;
     let uploaded = 0;
     for (const file of (req.files || [])) {
@@ -392,13 +416,13 @@ exports.uploadPhotos = (req, res) => {
       const first = await q1('SELECT filename FROM gallery_photos WHERE album_id=? ORDER BY created_at ASC LIMIT 1', [albumId]);
       if (first) await q('UPDATE gallery_albums SET cover_image=? WHERE id=?', [first.filename, albumId]);
     }
-    res.redirect('/gallery');
+    res.redirect('/admin/gallery');
   });
 };
 
 exports.deleteAlbum = async (req, res) => {
   await q('UPDATE gallery_albums SET is_active=0 WHERE id=?', [req.params.id]);
-  res.redirect('/gallery');
+  res.redirect('/admin/gallery');
 };
 
 exports.deletePhoto = async (req, res) => {
@@ -419,19 +443,19 @@ exports.videosList = async (req, res) => {
 
 exports.createVideo = async (req, res) => {
   const { title, description, youtube_url, category, featured, status } = req.body;
-  if (!title || !youtube_url) return res.redirect('/videos?error=Title+and+URL+required');
+  if (!title || !youtube_url) return res.redirect('/admin/videos?error=Title+and+URL+required');
   const ytMatch = youtube_url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
   const ytId = ytMatch ? ytMatch[1] : null;
   await q(`INSERT INTO videos (title, description, youtube_url, youtube_id, category, featured, status, created_by)
            VALUES (?,?,?,?,?,?,?,?)`,
     [title, description || null, youtube_url, ytId, category || 'general',
      featured === '1' ? 1 : 0, status || 'published', req.session.adminId]);
-  res.redirect('/videos');
+  res.redirect('/admin/videos');
 };
 
 exports.deleteVideo = async (req, res) => {
   await q('DELETE FROM videos WHERE id=?', [req.params.id]);
-  res.redirect('/videos');
+  res.redirect('/admin/videos');
 };
 
 // ── Comments ───────────────────────────────────────────
@@ -458,12 +482,12 @@ exports.approveComment = async (req, res) => {
 
 exports.spamComment = async (req, res) => {
   await q(`UPDATE comments SET status='spam' WHERE id=?`, [req.params.id]);
-  res.redirect('/comments');
+  res.redirect('/admin/comments');
 };
 
 exports.deleteComment = async (req, res) => {
   await q('DELETE FROM comments WHERE id=?', [req.params.id]);
-  res.redirect('/comments');
+  res.redirect('/admin/comments');
 };
 
 // ── Settings ───────────────────────────────────────────
@@ -484,7 +508,7 @@ exports.syncGoogleReviews = async (req, res) => {
     const sm = {};
     settingsRows.forEach(s => { sm[s.setting_key] = s.value; });
     if (!sm.google_place_id || !sm.google_places_api_key) {
-      return res.redirect('/settings?error=Set+Google+Place+ID+and+API+Key+first');
+      return res.redirect('/admin/settings?error=Set+Google+Place+ID+and+API+Key+first');
     }
     const result = await syncGoogleReviews(sm.google_place_id, sm.google_places_api_key, q);
     if (result.overallRating) {
@@ -501,14 +525,14 @@ exports.syncGoogleReviews = async (req, res) => {
 
 exports.saveSettings = async (req, res) => {
   const { site_name, site_tagline, contact_email,
-          facebook_url, instagram_url, youtube_url, breaking_news,
+          facebook, instagram, youtube, twitter, whatsapp, breaking_news,
           google_place_id, google_places_api_key,
           comments_enabled, comments_moderation,
           current_password, new_password, confirm_password } = req.body;
 
   const kvPairs = {
     site_name, site_tagline, contact_email,
-    facebook_url, instagram_url, youtube_url,
+    facebook: facebook || '', instagram: instagram || '', youtube: youtube || '', twitter: twitter || '', whatsapp: whatsapp || '',
     breaking_news: breaking_news || '',
     comments_enabled: comments_enabled ? '1' : '0',
     comments_moderation: comments_moderation ? '1' : '0',
@@ -522,31 +546,101 @@ exports.saveSettings = async (req, res) => {
   }
 
   if (new_password) {
-    if (new_password !== confirm_password) return res.redirect('/settings?error=Passwords+do+not+match');
+    if (new_password !== confirm_password) return res.redirect('/admin/settings?error=Passwords+do+not+match');
     const admin = await q1('SELECT password FROM admins WHERE id=?', [req.session.adminId]);
     if (!admin || !await bcrypt.compare(current_password, admin.password)) {
-      return res.redirect('/settings?error=Wrong+current+password');
+      return res.redirect('/admin/settings?error=Wrong+current+password');
     }
     const hash = await bcrypt.hash(new_password, 10);
     await q('UPDATE admins SET password=? WHERE id=?', [hash, req.session.adminId]);
   }
 
-  res.redirect('/settings?success=1');
+  res.redirect('/admin/settings?success=1');
 };
 
 // ── Newsletter admin ────────────────────────────────────
 exports.newsletterList = async (req, res) => {
   const subscribers = await q('SELECT * FROM newsletter_subscribers ORDER BY created_at DESC');
   res.render('admin/newsletter', {
-    title: 'Newsletter Subscribers | GTimes Admin',
+    title: 'Newsletter | GTimes Admin',
     subscribers,
     admin: { username: req.session.adminName },
+    success: req.query.success || null,
+    error:   req.query.error   || null,
   });
 };
 
 exports.deleteSubscriber = async (req, res) => {
   await q('DELETE FROM newsletter_subscribers WHERE id=?', [req.params.id]);
-  res.redirect('/newsletter');
+  res.redirect('/admin/newsletter');
+};
+
+exports.exportSubscribers = async (req, res) => {
+  const subscribers = await q('SELECT email, name, created_at FROM newsletter_subscribers ORDER BY created_at DESC');
+  const lines = ['email,name,subscribed_at'];
+  subscribers.forEach(s => {
+    const email = `"${(s.email || '').replace(/"/g, '""')}"`;
+    const name  = `"${(s.name  || '').replace(/"/g, '""')}"`;
+    const date  = new Date(s.created_at).toISOString().split('T')[0];
+    lines.push(`${email},${name},${date}`);
+  });
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="gtimes-subscribers.csv"');
+  res.send(lines.join('\r\n'));
+};
+
+exports.sendNewsletter = async (req, res) => {
+  const { subject, html_body } = req.body;
+  if (!subject || !html_body) return res.redirect('/admin/newsletter?error=Subject+and+body+are+required');
+  try {
+    const subscribers = await q('SELECT email, token FROM newsletter_subscribers ORDER BY created_at DESC');
+    if (!subscribers.length) return res.redirect('/admin/newsletter?error=No+subscribers+yet');
+    const { sendBroadcast } = require('../config/mailer');
+    const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : `http://localhost:${process.env.PORT || 3001}`;
+    const sent = await sendBroadcast({ subject, htmlBody: html_body, subscribers, siteUrl: domain });
+    res.redirect(`/admin/newsletter?success=Sent+to+${sent}+subscriber${sent !== 1 ? 's' : ''}`);
+  } catch (err) {
+    res.redirect(`/admin/newsletter?error=${encodeURIComponent(err.message)}`);
+  }
+};
+
+// ── Gallery extras ──────────────────────────────────────
+exports.updatePhotoCaption = async (req, res) => {
+  const { caption } = req.body;
+  await q('UPDATE gallery_photos SET caption=? WHERE id=?', [caption?.trim() || null, req.params.id]);
+  res.redirect('back');
+};
+
+exports.setAlbumCover = async (req, res) => {
+  const photo = await q1('SELECT filename, album_id FROM gallery_photos WHERE id=? AND album_id=?', [req.params.photoId, req.params.id]);
+  if (photo) await q('UPDATE gallery_albums SET cover_image=? WHERE id=?', [photo.filename, req.params.id]);
+  res.redirect('back');
+};
+
+// ── Article preview (draft preview for admin) ──────────
+exports.previewArticle = async (req, res) => {
+  const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
+  const article = await q1(
+    `SELECT a.*, c.name AS cat_name, c.slug AS cat_slug, c.color AS cat_color,
+            adm.username AS author_username, adm.bio AS author_bio, adm.avatar AS author_avatar
+     FROM articles a
+     LEFT JOIN categories c ON a.category_id = c.id
+     LEFT JOIN admins adm ON a.created_by = adm.id
+     WHERE a.id=?`, [req.params.id]);
+  if (!article) return res.redirect('/admin/articles');
+  const tags = await getArticleTags(req.params.id);
+  const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : `http://localhost:${process.env.PORT || 3001}`;
+  const { readingTime } = require('../utils/readingTime');
+  res.render('main/article', {
+    title: `[Preview] ${article.title}`,
+    settings, categories,
+    article: { ...article, reading_time: readingTime(article.content) },
+    comments: [], related: [], tags,
+    success: null, error: null,
+    domain,
+    canonicalUrl: `${domain}/article/${article.slug}`,
+    isPreview: true,
+  });
 };
 
 // ── Users management (super only) ───────────────────────
@@ -573,18 +667,18 @@ exports.userForm = (req, res) => {
 
 exports.createUser = async (req, res) => {
   const { username, name, password, role } = req.body;
-  if (!username || !name || !password) return res.redirect('/users/new?error=All+fields+required');
+  if (!username || !name || !password) return res.redirect('/admin/users/new?error=All+fields+required');
   const exists = await q1('SELECT id FROM admins WHERE username=?', [username]);
-  if (exists) return res.redirect('/users/new?error=Username+already+taken');
+  if (exists) return res.redirect('/admin/users/new?error=Username+already+taken');
   const hash = await bcrypt.hash(password, 10);
   await q('INSERT INTO admins (username, name, password, role) VALUES (?,?,?,?)',
     [username.trim(), name.trim(), hash, role || 'author']);
-  res.redirect('/users?success=1');
+  res.redirect('/admin/users?success=1');
 };
 
 exports.editUserForm = async (req, res) => {
   const user = await q1('SELECT id, username, name, role, bio, avatar FROM admins WHERE id=?', [req.params.id]);
-  if (!user) return res.redirect('/users');
+  if (!user) return res.redirect('/admin/users');
   res.render('admin/user-form', {
     title: 'Edit User | GTimes Admin',
     user,
@@ -600,13 +694,13 @@ exports.updateUser = async (req, res) => {
     const hash = await bcrypt.hash(new_password, 10);
     await q('UPDATE admins SET password=? WHERE id=?', [hash, req.params.id]);
   }
-  res.redirect('/users?success=1');
+  res.redirect('/admin/users?success=1');
 };
 
 exports.deleteUser = async (req, res) => {
-  if (parseInt(req.params.id) === req.session.adminId) return res.redirect('/users');
+  if (parseInt(req.params.id) === req.session.adminId) return res.redirect('/admin/users');
   await q('DELETE FROM admins WHERE id=?', [req.params.id]);
-  res.redirect('/users');
+  res.redirect('/admin/users');
 };
 
 // ── Profile (own bio + avatar) ───────────────────────────
@@ -622,7 +716,7 @@ exports.profileForm = async (req, res) => {
 
 exports.saveProfile = (req, res) => {
   adminAvatarUpload(req, res, async err => {
-    if (err) return res.redirect('/profile?error=' + encodeURIComponent(err.message));
+    if (err) return res.redirect('/admin/profile?error=' + encodeURIComponent(err.message));
     const { name, bio } = req.body;
     let avatar = null;
     if (req.files?.[0]) {
@@ -636,6 +730,123 @@ exports.saveProfile = (req, res) => {
       await q('UPDATE admins SET name=?, bio=? WHERE id=?', [name, bio || null, req.session.adminId]);
     }
     req.session.adminName = name;
-    res.redirect('/profile?success=1');
+    res.redirect('/admin/profile?success=1');
+  });
+};
+
+// ── Categories management ──────────────────────────────
+exports.categoriesList = async (req, res) => {
+  const categories = await q(
+    `SELECT c.*, COUNT(a.id) AS article_count
+     FROM categories c LEFT JOIN articles a ON a.category_id=c.id
+     GROUP BY c.id ORDER BY c.sort_order ASC`
+  );
+  res.render('admin/categories', {
+    title: 'Categories | GTimes Admin',
+    categories,
+    success: req.query.success || null,
+    error:   req.query.error   || null,
+  });
+};
+
+exports.categoryForm = (req, res) => {
+  res.render('admin/category-form', {
+    title: 'New Category | GTimes Admin',
+    category: null,
+    error: req.query.error || null,
+  });
+};
+
+exports.createCategory = async (req, res) => {
+  const { name, description, color, sort_order } = req.body;
+  if (!name) return res.redirect('/categories/new?error=Name+is+required');
+  const slug = await makeSlug(name, 'categories');
+  await q('INSERT INTO categories (name, slug, description, color, sort_order) VALUES (?,?,?,?,?)',
+    [name.trim(), slug, description || null, color || '#00663A', parseInt(sort_order) || 0]);
+  res.redirect('/admin/categories?success=1');
+};
+
+exports.editCategoryForm = async (req, res) => {
+  const category = await q1('SELECT * FROM categories WHERE id=?', [req.params.id]);
+  if (!category) return res.redirect('/admin/categories');
+  res.render('admin/category-form', {
+    title: 'Edit Category | GTimes Admin',
+    category,
+    error: req.query.error || null,
+  });
+};
+
+exports.updateCategory = async (req, res) => {
+  const { name, description, color, sort_order } = req.body;
+  if (!name) return res.redirect(`/admin/categories/${req.params.id}/edit?error=Name+is+required`);
+  const cat = await q1('SELECT * FROM categories WHERE id=?', [req.params.id]);
+  if (!cat) return res.redirect('/admin/categories');
+  const slug = name !== cat.name ? await makeSlug(name, 'categories', cat.id) : cat.slug;
+  await q('UPDATE categories SET name=?, slug=?, description=?, color=?, sort_order=? WHERE id=?',
+    [name.trim(), slug, description || null, color || '#00663A', parseInt(sort_order) || 0, req.params.id]);
+  res.redirect('/admin/categories?success=1');
+};
+
+exports.deleteCategory = async (req, res) => {
+  await q('UPDATE articles SET category_id=NULL WHERE category_id=?', [req.params.id]);
+  await q('DELETE FROM categories WHERE id=?', [req.params.id]);
+  res.redirect('/admin/categories?success=1');
+};
+
+// ── Tags management ────────────────────────────────────
+exports.tagsList = async (req, res) => {
+  const tags = await q(
+    `SELECT t.*, COUNT(at.article_id) AS article_count
+     FROM tags t LEFT JOIN article_tags at ON at.tag_id=t.id
+     GROUP BY t.id ORDER BY article_count DESC, t.name ASC`
+  );
+  res.render('admin/tags', {
+    title: 'Tags | GTimes Admin',
+    tags,
+    success: req.query.success || null,
+  });
+};
+
+exports.deleteTag = async (req, res) => {
+  await q('DELETE FROM tags WHERE id=?', [req.params.id]);
+  res.redirect('/admin/tags?success=1');
+};
+
+// ── Analytics ──────────────────────────────────────────
+exports.analytics = async (req, res) => {
+  const [
+    articlesByStatus, totalViews, topArticles,
+    byCategory, subscribers, pendingComments,
+    totalEvents, totalPhotos, totalVideos,
+  ] = await Promise.all([
+    q('SELECT status, COUNT(*) AS c FROM articles GROUP BY status'),
+    q1('SELECT COALESCE(SUM(views),0) AS total FROM articles WHERE status="published"'),
+    q(`SELECT a.title, a.slug, a.views, a.published_at, c.name AS cat_name, c.color AS cat_color
+       FROM articles a LEFT JOIN categories c ON a.category_id=c.id
+       WHERE a.status='published' ORDER BY a.views DESC LIMIT 10`),
+    q(`SELECT c.name, c.color, COUNT(a.id) AS cnt
+       FROM categories c LEFT JOIN articles a ON a.category_id=c.id AND a.status='published'
+       GROUP BY c.id ORDER BY cnt DESC`),
+    q1('SELECT COUNT(*) AS c FROM newsletter_subscribers'),
+    q1('SELECT COUNT(*) AS c FROM comments WHERE status="pending"'),
+    q1('SELECT COUNT(*) AS c FROM events'),
+    q1('SELECT COUNT(*) AS c FROM gallery_photos'),
+    q1('SELECT COUNT(*) AS c FROM videos WHERE status="published"'),
+  ]);
+
+  const statusMap = {};
+  articlesByStatus.forEach(r => { statusMap[r.status] = r.c; });
+
+  res.render('admin/analytics', {
+    title: 'Analytics | GTimes Admin',
+    statusMap,
+    totalViews: totalViews?.total || 0,
+    topArticles,
+    byCategory,
+    subscribers:     subscribers?.c     || 0,
+    pendingComments: pendingComments?.c  || 0,
+    totalEvents:     totalEvents?.c      || 0,
+    totalPhotos:     totalPhotos?.c      || 0,
+    totalVideos:     totalVideos?.c      || 0,
   });
 };

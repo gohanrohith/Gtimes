@@ -33,7 +33,7 @@
   <main class="gt-admin-main">
     <div class="gt-admin-page-header">
       <h1><%= article ? 'Edit Article' : 'New Article' %></h1>
-      <a href="/articles" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+      <a href="/admin/articles" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
     </div>
 
     <% if (errors && errors.length > 0) { %>
@@ -44,7 +44,7 @@
     </div>
     <% } %>
 
-    <form action="<%= article ? '/articles/'+article.id+'/edit' : '/articles/new' %>" method="POST" enctype="multipart/form-data" id="articleForm">
+    <form action="<%= article ? '/admin/articles/'+article.id+'/edit' : '/admin/articles/new' %>" method="POST" enctype="multipart/form-data" id="articleForm">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <!-- Hidden inputs — synced from Quill on submit -->
       <input type="hidden" name="content"    id="inputEn">
@@ -94,22 +94,45 @@
         <div>
           <div class="gt-admin-card" style="margin-bottom:1.25rem">
             <h4 style="font-size:.85rem;font-weight:700;margin-bottom:1rem">Publish</h4>
-            <div class="gt-form-group">
-              <label>Status</label>
-              <select name="status">
-                <option value="draft"     <%= (article?.status||'draft')==='draft'?'selected':'' %>>Draft</option>
-                <option value="published" <%= article?.status==='published'?'selected':'' %>>Published</option>
-              </select>
-            </div>
+            <% if (article?.status === 'published') { %>
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;font-size:.8rem;color:var(--gt-green);font-weight:600"><i class="fas fa-circle" style="font-size:.5rem"></i> Published</div>
+            <% } else if (article?.scheduled_at) { %>
+            <div style="font-size:.78rem;color:#e67e22;font-weight:600;margin-bottom:.75rem"><i class="fas fa-clock"></i> Scheduled: <%= new Date(article.scheduled_at).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) %></div>
+            <% } else { %>
+            <div style="font-size:.78rem;color:var(--gt-gray);margin-bottom:.75rem">Draft — not visible to public</div>
+            <% } %>
             <div class="gt-form-group">
               <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
                 <input type="checkbox" name="featured" value="1" <%= article?.featured?'checked':'' %> style="width:auto">
                 Mark as Featured Story
               </label>
             </div>
+            <div class="gt-form-group">
+              <label>Schedule Publishing <span style="font-weight:400;color:var(--gt-gray)">(optional)</span></label>
+              <input type="datetime-local" name="scheduled_at"
+                value="<%= article?.scheduled_at ? new Date(article.scheduled_at).toISOString().slice(0,16) : '' %>">
+              <small style="color:var(--gt-gray);font-size:.73rem">Leave blank to save as draft. Article auto-publishes at this date/time.</small>
+            </div>
             <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
-              <i class="fas fa-save"></i> <%= article ? 'Save Changes' : 'Create Article' %>
+              <i class="fas fa-save"></i> Save Draft
             </button>
+            <% const canPublish = locals.adminRole === 'editor' || locals.adminRole === 'super'; %>
+            <% if (article) { %>
+              <% if (canPublish && article.status !== 'published') { %>
+              <form action="/admin/articles/<%= article.id %>/publish" method="POST" style="margin-top:.5rem">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-success" style="width:100%;justify-content:center"><i class="fas fa-check"></i> Publish Now</button>
+              </form>
+              <% } else if (!canPublish && article.status === 'draft') { %>
+              <form action="/admin/articles/<%= article.id %>/submit-review" method="POST" style="margin-top:.5rem">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-outline" style="width:100%;justify-content:center"><i class="fas fa-paper-plane"></i> Submit for Review</button>
+              </form>
+              <% } %>
+              <a href="/admin/articles/<%= article.id %>/preview" target="_blank" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:.5rem">
+                <i class="fas fa-eye"></i> Preview
+              </a>
+            <% } %>
           </div>
 
           <div class="gt-admin-card" style="margin-bottom:1.25rem">

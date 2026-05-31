@@ -53,11 +53,9 @@ app.use(siteMiddleware);
 // API (webhook receiver from Greenwood, no CSRF needed)
 app.use('/api', apiRoutes);
 
-// Route by site
-app.use((req, res, next) => {
-  if (req.site === 'admin') return adminRoutes(req, res, next);
-  return mainRoutes(req, res, next);
-});
+// Admin at /admin, public site at /
+app.use('/admin', adminRoutes);
+app.use('/', mainRoutes);
 
 app.use((req, res) => res.status(404).render('404', { title: '404 | GTimes' }));
 app.use((err, req, res, next) => {
