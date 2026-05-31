@@ -1,4 +1,9 @@
 require('dotenv').config();
+const fs         = require('fs');
+const path       = require('path');
+['articles','events','gallery','avatars','videos'].forEach(d =>
+  fs.mkdirSync(path.join(__dirname, 'public/uploads', d), { recursive: true })
+);
 const express    = require('express');
 const session    = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
