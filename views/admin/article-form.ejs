@@ -83,17 +83,17 @@
             <div style="border-top:2px solid var(--gt-light,#e8e8e8);margin-bottom:0"></div>
 
             <div id="tab-en" class="gt-lang-panel">
-              <div id="quillEn" style="min-height:380px;background:#fff"><%= article?.content||'' %></div>
+              <div id="quillEn" style="min-height:380px;background:#fff"><%- article?.content||'' %></div>
             </div>
 
             <div id="tab-hi" class="gt-lang-panel">
               <p class="gt-lang-hint"><i class="fas fa-info-circle"></i> Write in English, copy to ChatGPT/Gemini → ask for Hindi translation → paste here.</p>
-              <div id="quillHi" style="min-height:380px;background:#fff"><%= article?.content_hi||'' %></div>
+              <div id="quillHi" style="min-height:380px;background:#fff"><%- article?.content_hi||'' %></div>
             </div>
 
             <div id="tab-te" class="gt-lang-panel">
               <p class="gt-lang-hint"><i class="fas fa-info-circle"></i> Write in English, copy to ChatGPT/Gemini → ask for Telugu translation → paste here.</p>
-              <div id="quillTe" style="min-height:380px;background:#fff"><%= article?.content_te||'' %></div>
+              <div id="quillTe" style="min-height:380px;background:#fff"><%- article?.content_te||'' %></div>
             </div>
           </div>
         </div>
