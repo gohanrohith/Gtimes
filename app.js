@@ -7,8 +7,9 @@ const compression = require('compression');
 const morgan     = require('morgan');
 const path       = require('path');
 const fs         = require('fs');
+const UPLOADS_BASE = process.env.UPLOADS_DIR || path.join(__dirname, 'public/uploads');
 ['articles','events','gallery','avatars','videos'].forEach(d =>
-  fs.mkdirSync(path.join(__dirname, 'public/uploads', d), { recursive: true })
+  fs.mkdirSync(path.join(UPLOADS_BASE, d), { recursive: true })
 );
 
 const siteMiddleware  = require('./middleware/site');
@@ -29,6 +30,7 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(UPLOADS_BASE));
 
 const isProduction = process.env.NODE_ENV === 'production';
 

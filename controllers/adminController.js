@@ -10,9 +10,11 @@ const { isValidImage }    = require('../utils/magicBytes');
 const { readingTime }     = require('../utils/readingTime');
 
 // ── Multer helpers ─────────────────────────────────────
+const UPLOADS_BASE = process.env.UPLOADS_DIR || path.join(__dirname, '../public/uploads');
+
 function makeStorage(dest) {
   return multer.diskStorage({
-    destination: (req, file, cb) => cb(null, path.join(__dirname, '../public/uploads', dest)),
+    destination: (req, file, cb) => cb(null, path.join(UPLOADS_BASE, dest)),
     filename:    (req, file, cb) => {
       const ext = path.extname(file.originalname).toLowerCase();
       cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
@@ -201,7 +203,7 @@ exports.uploadArticleImage = (req, res) => {
   articleImgUpload(req, res, err => {
     if (err) return res.status(400).json({ error: err.message });
     if (!req.file) return res.status(400).json({ error: 'No file received' });
-    const fp = path.join(__dirname, '../public/uploads/articles', req.file.filename);
+    const fp = path.join(UPLOADS_BASE, 'articles', req.file.filename);
     if (!isValidImage(fp)) {
       fs.unlinkSync(fp);
       return res.status(400).json({ error: 'Invalid image file' });
@@ -223,7 +225,7 @@ exports.createArticle = (req, res) => {
 
     let cover = null;
     if (req.files?.[0]) {
-      const fp = path.join(__dirname, '../public/uploads/articles', req.files[0].filename);
+      const fp = path.join(UPLOADS_BASE, 'articles', req.files[0].filename);
       if (isValidImage(fp)) { cover = req.files[0].filename; }
       else { fs.unlinkSync(fp); }
     }
@@ -269,12 +271,12 @@ exports.updateArticle = (req, res) => {
 
     let cover = article.cover_image;
     if (req.body.remove_cover === '1' && cover) {
-      const old = path.join(__dirname, '../public/uploads/articles', cover);
+      const old = path.join(UPLOADS_BASE, 'articles', cover);
       if (fs.existsSync(old)) fs.unlinkSync(old);
       cover = null;
     }
     if (req.files?.[0]) {
-      const fp = path.join(__dirname, '../public/uploads/articles', req.files[0].filename);
+      const fp = path.join(UPLOADS_BASE, 'articles', req.files[0].filename);
       if (isValidImage(fp)) { cover = req.files[0].filename; }
       else { fs.unlinkSync(fp); }
     }
@@ -357,7 +359,7 @@ exports.createEvent = (req, res) => {
     if (!title) return res.redirect('/admin/events/new?error=Title+is+required');
     let cover = null;
     if (req.files?.[0]) {
-      const fp = path.join(__dirname, '../public/uploads/events', req.files[0].filename);
+      const fp = path.join(UPLOADS_BASE, 'events', req.files[0].filename);
       if (isValidImage(fp)) { cover = req.files[0].filename; }
       else { fs.unlinkSync(fp); }
     }
@@ -393,7 +395,7 @@ exports.updateEvent = (req, res) => {
     const { title, description, location, event_date, event_time, campus, status, featured } = req.body;
     let cover = ev.cover_image;
     if (req.files?.[0]) {
-      const fp = path.join(__dirname, '../public/uploads/events', req.files[0].filename);
+      const fp = path.join(UPLOADS_BASE, 'events', req.files[0].filename);
       if (isValidImage(fp)) { cover = req.files[0].filename; }
       else { fs.unlinkSync(fp); }
     }
@@ -452,7 +454,7 @@ exports.uploadPhotos = (req, res) => {
     const albumId = req.params.id;
     let uploaded = 0;
     for (const file of (req.files || [])) {
-      const fp = path.join(__dirname, '../public/uploads/gallery', file.filename);
+      const fp = path.join(UPLOADS_BASE, 'gallery', file.filename);
       if (!isValidImage(fp)) { fs.unlinkSync(fp); continue; }
       await q('INSERT INTO gallery_photos (album_id, filename, caption) VALUES (?,?,?)',
         [albumId, file.filename, req.body.caption || null]);
@@ -476,7 +478,7 @@ exports.deleteAlbum = async (req, res) => {
 exports.deletePhoto = async (req, res) => {
   const photo = await q1('SELECT * FROM gallery_photos WHERE id=?', [req.params.id]);
   if (photo) {
-    const fp = path.join(__dirname, '../public/uploads/gallery', photo.filename);
+    const fp = path.join(UPLOADS_BASE, 'gallery', photo.filename);
     if (fs.existsSync(fp)) fs.unlinkSync(fp);
     await q('DELETE FROM gallery_photos WHERE id=?', [photo.id]);
   }
@@ -768,7 +770,7 @@ exports.saveProfile = (req, res) => {
     const { name, bio } = req.body;
     let avatar = null;
     if (req.files?.[0]) {
-      const fp = path.join(__dirname, '../public/uploads/avatars', req.files[0].filename);
+      const fp = path.join(UPLOADS_BASE, 'avatars', req.files[0].filename);
       if (isValidImage(fp)) { avatar = req.files[0].filename; }
       else { fs.unlinkSync(fp); }
     }
