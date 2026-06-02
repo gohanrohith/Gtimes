@@ -84,6 +84,10 @@
 
             <div id="tab-en" class="gt-lang-panel">
               <div id="quillEn" style="min-height:380px;background:#fff"><%- article?.content||'' %></div>
+              <div id="wordCountBar" style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--gt-off);border-top:1px solid var(--gt-light);font-size:.78rem;border-radius:0 0 6px 6px">
+                <span id="wordCountMsg" style="font-weight:600"></span>
+                <span><span id="wordCountNum" style="font-weight:700">0</span> / 500 words</span>
+              </div>
             </div>
 
             <div id="tab-hi" class="gt-lang-panel">
@@ -285,6 +289,57 @@ document.getElementById('articleForm').addEventListener('submit', function() {
   document.getElementById('inputHi').value = quillHi.root.innerHTML;
   document.getElementById('inputTe').value = quillTe.root.innerHTML;
 });
+
+// Word counter for English editor
+const WORD_MAX = 500;
+function countWords(text) {
+  return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+}
+function updateWordCount() {
+  const text  = quillEn.getText();
+  const count = countWords(text);
+  const numEl = document.getElementById('wordCountNum');
+  const msgEl = document.getElementById('wordCountMsg');
+  const bar   = document.getElementById('wordCountBar');
+  numEl.textContent = count;
+  if (count >= WORD_MAX) {
+    numEl.style.color = '#e63946';
+    bar.style.borderTop = '2px solid #e63946';
+    msgEl.textContent  = 'Word limit reached — please trim your article.';
+    msgEl.style.color  = '#e63946';
+  } else if (count >= 400) {
+    numEl.style.color = '#e67e22';
+    bar.style.borderTop = '2px solid #e67e22';
+    msgEl.textContent  = 'Getting long — ideal length is under 400 words.';
+    msgEl.style.color  = '#e67e22';
+  } else if (count >= 300) {
+    numEl.style.color = '#00663A';
+    bar.style.borderTop = '2px solid #00663A';
+    msgEl.textContent  = 'Good length.';
+    msgEl.style.color  = '#00663A';
+  } else {
+    numEl.style.color = '#888';
+    bar.style.borderTop = '1px solid var(--gt-light)';
+    msgEl.textContent  = '';
+  }
+}
+quillEn.on('text-change', function() {
+  const text  = quillEn.getText();
+  const count = countWords(text);
+  if (count >= WORD_MAX) {
+    // block further typing — revert to last allowed state
+    const delta = quillEn.getContents();
+    // count again after potential paste
+    const words = text.trim().split(/\s+/);
+    if (words.length > WORD_MAX) {
+      const allowed = words.slice(0, WORD_MAX).join(' ');
+      quillEn.setText(allowed);
+      quillEn.setSelection(quillEn.getLength());
+    }
+  }
+  updateWordCount();
+});
+updateWordCount();
 
 // Short URL live preview
 const shortSlugInput = document.getElementById('shortSlugInput');
