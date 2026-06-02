@@ -120,11 +120,6 @@
           </div>
         </div>
 
-        <% if (article.cover_image) { %>
-        <div class="gt-article-cover">
-          <img src="/uploads/articles/<%= article.cover_image %>" alt="<%= article.title %>" onerror="this.closest('.gt-article-cover').style.display='none'">
-        </div>
-        <% } %>
 
         <% const hasHi = article.content_hi && article.content_hi.trim().length > 10; %>
         <% const hasTe = article.content_te && article.content_te.trim().length > 10; %>
@@ -256,6 +251,12 @@
           <div style="display:none;font-size:1.2rem;font-weight:800;margin-bottom:.5rem"><span style="color:var(--gt-red)">G</span>Times</div>
           <p style="font-size:.85rem;color:#aaa;line-height:1.6"><%= settings?.site_tagline || 'Your School. Your Stories.' %></p>
         </div>
+
+        <% if (article.cover_image) { %>
+        <div style="margin-top:1.5rem;border-radius:var(--gt-radius-lg);overflow:hidden;box-shadow:var(--gt-shadow)">
+          <img src="/uploads/articles/<%= article.cover_image %>" alt="<%= article.title %>" style="width:100%;height:auto;display:block" onerror="this.closest('div').style.display='none'">
+        </div>
+        <% } %>
       </aside>
     </div>
   </div>
