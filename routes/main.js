@@ -7,6 +7,7 @@ const { csrfProtect } = require('../middleware/csrf');
 router.get('/',                  ctrl.home);
 router.get('/articles',          ctrl.articles);
 router.get('/article/:slug',     ctrl.article);
+router.get('/p/:id',             ctrl.shortArticle);
 router.post('/article/:slug/comment', formLimiter, csrfProtect, ctrl.postComment);
 router.get('/category/:slug',    ctrl.category);
 router.get('/tag/:slug',         ctrl.tag);

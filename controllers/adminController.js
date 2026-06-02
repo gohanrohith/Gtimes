@@ -62,11 +62,11 @@ async function getCategories() {
 }
 
 // ── Webhook: notify Greenwood on publish ───────────────
-function notifyGreenwood(type, data) {
+function notifyGreenwood(type, action, campus, data) {
   const url = process.env.GREENWOOD_WEBHOOK_URL;
   const secret = process.env.GREENWOOD_WEBHOOK_SECRET;
   if (!url || !secret) return;
-  const payload = JSON.stringify({ type, data, secret });
+  const payload = JSON.stringify({ type, action, campus, data, secret });
   try {
     const u = new URL(url);
     const opts = { hostname: u.hostname, path: u.pathname, method: 'POST',
@@ -315,13 +315,13 @@ exports.publishArticle = async (req, res) => {
   if (!article) return res.redirect('/admin/articles');
   const now = new Date();
   await q(`UPDATE articles SET status='published', published_at=COALESCE(published_at,?), scheduled_at=NULL WHERE id=?`, [now, article.id]);
-  notifyGreenwood('article', {
+  notifyGreenwood('article', 'publish', 'all', {
     gtimes_id:   String(article.id),
     title:       article.title,
     excerpt:     article.excerpt,
     gtimes_url:  `https://gtimes.in/article/${article.slug}`,
     category:    article.cat_name || 'news',
-    cover_image: article.cover_image ? `https://gtimes.in/uploads/articles/${article.cover_image}` : null,
+    image_url:   article.cover_image ? `https://gtimes.in/uploads/articles/${article.cover_image}` : null,
     published_at: now.toISOString(),
   });
   res.redirect('/admin/articles');
@@ -369,13 +369,13 @@ exports.createEvent = (req, res) => {
       [title, slug, description || null, cover, location || null,
        event_date || null, event_time || null, campus || 'all',
        status || 'upcoming', featured === '1' ? 1 : 0, req.session.adminId]);
-    notifyGreenwood('event', {
+    notifyGreenwood('event', 'publish', campus || 'all', {
       gtimes_id:   slug,
       title,
       description: description || null,
       gtimes_url:  `https://gtimes.in/events`,
       event_date:  event_date || null,
-      campus:      campus || 'all',
+      category:    'general',
     });
     res.redirect('/admin/events');
   });

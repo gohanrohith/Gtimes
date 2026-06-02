@@ -13,23 +13,26 @@
 <%- include('../partials/nav') %>
 <div class="gt-page-hero">
   <div class="container">
-    <h1><%= activeYear ? activeYear + ' Archive' : 'All News' %></h1>
-    <p><%= activeYear ? 'Stories published in ' + activeYear : 'Latest stories from Greenwood schools and beyond' %></p>
+    <h1><%= (typeof activeCategory !== 'undefined' && activeCategory) ? activeCategory.name : (activeYear ? activeYear + ' Archive' : 'All News') %></h1>
+    <p><%= (typeof activeCategory !== 'undefined' && activeCategory) ? (activeYear ? activeCategory.name + ' stories from ' + activeYear : 'Browsing ' + activeCategory.name + ' category') : (activeYear ? 'Stories published in ' + activeYear : 'Latest stories from Greenwood schools and beyond') %></p>
   </div>
 </div>
 <main class="section">
   <div class="container">
+    <% const yearQ = activeYear ? '&year=' + activeYear : ''; %>
+    <% const catQ  = (typeof activeCategory !== 'undefined' && activeCategory) ? '&category=' + activeCategory.slug : ''; %>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
-      <a href="/articles" class="btn btn-sm <%= !activeYear ? 'btn-primary' : 'btn-outline' %>">All</a>
+      <a href="/articles<%= activeYear ? '?year=' + activeYear : '' %>" class="btn btn-sm <%= (!activeCategory) ? 'btn-primary' : 'btn-outline' %>">All</a>
       <% if (typeof categories !== 'undefined') { categories.forEach(c => { %>
-      <a href="/category/<%= c.slug %>" class="btn btn-sm btn-outline" style="border-color:<%= c.color %>;color:<%= c.color %>"><%= c.name %></a>
+      <% const isActive = (typeof activeCategory !== 'undefined' && activeCategory && activeCategory.slug === c.slug); %>
+      <a href="/articles?category=<%= c.slug %><%= yearQ %>" class="btn btn-sm <%= isActive ? 'btn-primary' : 'btn-outline' %>" style="<%= isActive ? 'background:' + c.color + ';border-color:' + c.color + ';color:#fff' : 'border-color:' + c.color + ';color:' + c.color %>"><%= c.name %></a>
       <% }) } %>
     </div>
     <% if (typeof availableYears !== 'undefined' && availableYears.length > 0) { %>
     <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:2rem;align-items:center">
       <span style="font-size:.78rem;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-right:.25rem">Archive:</span>
       <% availableYears.forEach(y => { %>
-      <a href="/articles?year=<%= y.yr %>" class="gt-year-pill<%= activeYear == y.yr ? ' active' : '' %>"><%= y.yr %> <span class="gt-year-count"><%= y.cnt %></span></a>
+      <a href="/articles?year=<%= y.yr %><%= catQ %>" class="gt-year-pill<%= activeYear == y.yr ? ' active' : '' %>"><%= y.yr %> <span class="gt-year-count"><%= y.cnt %></span></a>
       <% }) %>
     </div>
     <% } %>
@@ -57,12 +60,12 @@
     </div>
     <% if (pagination.totalPages > 1) { %>
     <div class="gt-pagination">
-      <% const yearQ = activeYear ? '&year=' + activeYear : ''; %>
-      <% if (pagination.page > 1) { %><a href="/articles?page=<%= pagination.page-1 %><%= yearQ %>">&laquo; Prev</a><% } %>
+      <% const pageExtra = (activeYear ? '&year=' + activeYear : '') + ((typeof activeCategory !== 'undefined' && activeCategory) ? '&category=' + activeCategory.slug : ''); %>
+      <% if (pagination.page > 1) { %><a href="/articles?page=<%= pagination.page-1 %><%= pageExtra %>">&laquo; Prev</a><% } %>
       <% for (let i=1; i<=pagination.totalPages; i++) { %>
-      <% if (i===pagination.page) { %><span class="active"><%= i %></span><% } else { %><a href="/articles?page=<%= i %><%= yearQ %>"><%= i %></a><% } %>
+      <% if (i===pagination.page) { %><span class="active"><%= i %></span><% } else { %><a href="/articles?page=<%= i %><%= pageExtra %>"><%= i %></a><% } %>
       <% } %>
-      <% if (pagination.page < pagination.totalPages) { %><a href="/articles?page=<%= pagination.page+1 %><%= yearQ %>">Next &raquo;</a><% } %>
+      <% if (pagination.page < pagination.totalPages) { %><a href="/articles?page=<%= pagination.page+1 %><%= pageExtra %>">Next &raquo;</a><% } %>
     </div>
     <% } %>
     <% } else { %>

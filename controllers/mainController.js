@@ -73,32 +73,45 @@ exports.home = async (req, res) => {
 // ── Articles listing ─────────────────────────────────────
 exports.articles = async (req, res) => {
   const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
-  const page    = Math.max(1, parseInt(req.query.page) || 1);
-  const perPage = parseInt(settings.articles_per_page) || 12;
-  const offset  = (page - 1) * perPage;
-  const year    = req.query.year ? parseInt(req.query.year) : null;
+  const page     = Math.max(1, parseInt(req.query.page) || 1);
+  const perPage  = parseInt(settings.articles_per_page) || 12;
+  const offset   = (page - 1) * perPage;
+  const year     = req.query.year ? parseInt(req.query.year) : null;
+  const catSlug  = req.query.category || null;
 
-  const yearFilter = year ? ' AND YEAR(a.published_at) = ?' : '';
-  const params     = year ? [perPage, offset, year] : [perPage, offset];
-  const countParams = year ? ['published', year] : ['published'];
+  const activeCat = catSlug ? categories.find(c => c.slug === catSlug) || null : null;
+
+  const filters = [];
+  const countP  = ['published'];
+  const listP   = [];
+
+  if (year)    { filters.push(' AND YEAR(a.published_at)=?'); countP.push(year); listP.push(year); }
+  if (activeCat) { filters.push(' AND a.category_id=?');     countP.push(activeCat.id); listP.push(activeCat.id); }
+
+  const where = filters.join('');
+  listP.push(perPage, offset);
 
   const [count, articles, availableYears] = await Promise.all([
-    q1(`SELECT COUNT(*) AS c FROM articles a WHERE a.status=?${year ? ' AND YEAR(a.published_at)=?' : ''}`, countParams),
+    q1(`SELECT COUNT(*) AS c FROM articles a WHERE a.status=?${where}`, countP),
     q(`SELECT a.*, c.name AS cat_name, c.slug AS cat_slug, c.color AS cat_color
        FROM articles a LEFT JOIN categories c ON a.category_id = c.id
-       WHERE a.status='published'${yearFilter}
-       ORDER BY a.published_at DESC LIMIT ? OFFSET ?`, params),
+       WHERE a.status='published'${where}
+       ORDER BY a.published_at DESC LIMIT ? OFFSET ?`, listP),
     q(`SELECT YEAR(published_at) AS yr, COUNT(*) AS cnt
        FROM articles WHERE status='published'
        GROUP BY yr ORDER BY yr DESC`),
   ]);
 
   const total = count?.c || 0;
+  let titleParts = [];
+  if (activeCat) titleParts.push(activeCat.name);
+  if (year) titleParts.push(year + ' Archive');
   res.render('main/articles', {
-    title: year ? `${year} Archive | ${settings.site_name || 'GTimes'}` : `All Articles | ${settings.site_name || 'GTimes'}`,
+    title: titleParts.length ? `${titleParts.join(' · ')} | ${settings.site_name || 'GTimes'}` : `All News | ${settings.site_name || 'GTimes'}`,
     settings, categories, articles: withReadingTime(articles),
     pagination: { page, perPage, total, totalPages: Math.ceil(total / perPage) },
     activeYear: year,
+    activeCategory: activeCat,
     availableYears,
   });
 };
@@ -165,7 +178,17 @@ exports.article = async (req, res) => {
     error:   req.query.error   || null,
     domain,
     canonicalUrl: `${domain}/article/${article.slug}`,
+    shortUrl: `${domain}/p/${article.id}`,
   });
+};
+
+// ── Short URL redirect ───────────────────────────────────
+exports.shortArticle = async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (!id) return res.status(404).render('404', { title: '404 | GTimes' });
+  const article = await q1('SELECT slug FROM articles WHERE id=? AND status=?', [id, 'published']);
+  if (!article) return res.status(404).render('404', { title: '404 | GTimes' });
+  res.redirect(301, `/article/${article.slug}`);
 };
 
 // ── Post comment ─────────────────────────────────────────
