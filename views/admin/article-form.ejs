@@ -173,11 +173,27 @@
             </div>
           </div>
 
-          <div class="gt-admin-card">
+          <div class="gt-admin-card" style="margin-bottom:1.25rem">
             <h4 style="font-size:.85rem;font-weight:700;margin-bottom:.5rem">Tags</h4>
             <p style="font-size:.75rem;color:var(--gt-gray);margin-bottom:.75rem">Comma-separated — e.g. <em>sports, cbse, warangal</em></p>
             <div class="gt-form-group">
               <input type="text" name="tags" value="<%= articleTags||'' %>" placeholder="tag1, tag2, tag3">
+            </div>
+          </div>
+
+          <div class="gt-admin-card">
+            <h4 style="font-size:.85rem;font-weight:700;margin-bottom:.25rem">Short URL <span style="font-weight:400;color:var(--gt-gray)">(optional)</span></h4>
+            <p style="font-size:.75rem;color:var(--gt-gray);margin-bottom:.75rem">Custom name for the share link. Letters, numbers and hyphens only.</p>
+            <div class="gt-form-group" style="margin-bottom:.5rem">
+              <input type="text" name="short_slug" id="shortSlugInput"
+                value="<%= article?.short_slug||'' %>"
+                placeholder="e.g. sports-day-2025"
+                pattern="[a-z0-9\-]+"
+                style="text-transform:lowercase"
+                oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/-{2,}/g,'-')">
+            </div>
+            <div style="font-size:.75rem;color:var(--gt-gray);background:var(--gt-off);border-radius:4px;padding:.4rem .6rem;word-break:break-all">
+              gtimes.in/p/<span id="shortSlugPreview" style="color:var(--gt-ink);font-weight:600"><%= article?.short_slug || '<name>' %></span>
             </div>
           </div>
         </div>
@@ -269,6 +285,15 @@ document.getElementById('articleForm').addEventListener('submit', function() {
   document.getElementById('inputHi').value = quillHi.root.innerHTML;
   document.getElementById('inputTe').value = quillTe.root.innerHTML;
 });
+
+// Short URL live preview
+const shortSlugInput = document.getElementById('shortSlugInput');
+const shortSlugPreview = document.getElementById('shortSlugPreview');
+if (shortSlugInput && shortSlugPreview) {
+  shortSlugInput.addEventListener('input', function() {
+    shortSlugPreview.textContent = this.value || '<name>';
+  });
+}
 
 // Cover image preview
 document.getElementById('coverInput')?.addEventListener('change', function() {

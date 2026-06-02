@@ -178,15 +178,17 @@ exports.article = async (req, res) => {
     error:   req.query.error   || null,
     domain,
     canonicalUrl: `${domain}/article/${article.slug}`,
-    shortUrl: `${domain}/p/${article.id}`,
+    shortUrl: `${domain}/p/${article.short_slug || article.id}`,
   });
 };
 
 // ── Short URL redirect ───────────────────────────────────
 exports.shortArticle = async (req, res) => {
-  const id = parseInt(req.params.id);
-  if (!id) return res.status(404).render('404', { title: '404 | GTimes' });
-  const article = await q1('SELECT slug FROM articles WHERE id=? AND status=?', [id, 'published']);
+  const param = req.params.id;
+  const isNumeric = /^\d+$/.test(param);
+  const article = isNumeric
+    ? await q1('SELECT slug FROM articles WHERE id=? AND status=?', [parseInt(param), 'published'])
+    : await q1('SELECT slug FROM articles WHERE short_slug=? AND status=?', [param, 'published']);
   if (!article) return res.status(404).render('404', { title: '404 | GTimes' });
   res.redirect(301, `/article/${article.slug}`);
 };

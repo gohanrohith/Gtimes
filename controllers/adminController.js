@@ -230,14 +230,15 @@ exports.createArticle = (req, res) => {
       else { fs.unlinkSync(fp); }
     }
     const slug = await makeSlug(title, 'articles');
+    const shortSlug = req.body.short_slug ? req.body.short_slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-{2,}/g, '-').replace(/^-|-$/g, '') : null;
     const schedDate = scheduled_at ? new Date(scheduled_at) : null;
     const validSched = schedDate && !isNaN(schedDate) ? schedDate : null;
     let result;
     try {
       result = await query(
-        `INSERT INTO articles (title, slug, excerpt, content, content_hi, content_te, cover_image, category_id, author_name, featured, scheduled_at, created_by)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-        [title, slug, excerpt || null, content || null, content_hi || null, content_te || null,
+        `INSERT INTO articles (title, slug, short_slug, excerpt, content, content_hi, content_te, cover_image, category_id, author_name, featured, scheduled_at, created_by)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [title, slug, shortSlug || null, excerpt || null, content || null, content_hi || null, content_te || null,
          cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0,
          validSched, req.session.adminId]);
     } catch (dbErr) {
@@ -281,12 +282,13 @@ exports.updateArticle = (req, res) => {
       else { fs.unlinkSync(fp); }
     }
     const slug = title !== article.title ? await makeSlug(title, 'articles', article.id) : article.slug;
+    const shortSlug = req.body.short_slug ? req.body.short_slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-{2,}/g, '-').replace(/^-|-$/g, '') : null;
     const { scheduled_at } = req.body;
     const schedDate = scheduled_at ? new Date(scheduled_at) : null;
     const validSched = schedDate && !isNaN(schedDate) ? schedDate : null;
     try {
-      await query(`UPDATE articles SET title=?, slug=?, excerpt=?, content=?, content_hi=?, content_te=?, cover_image=?, category_id=?, author_name=?, featured=?, scheduled_at=? WHERE id=?`,
-        [title, slug, excerpt || null, content || null, content_hi || null, content_te || null,
+      await query(`UPDATE articles SET title=?, slug=?, short_slug=?, excerpt=?, content=?, content_hi=?, content_te=?, cover_image=?, category_id=?, author_name=?, featured=?, scheduled_at=? WHERE id=?`,
+        [title, slug, shortSlug || null, excerpt || null, content || null, content_hi || null, content_te || null,
          cover, category_id || null, author_name || 'GTimes Staff', featured === '1' ? 1 : 0,
          validSched, req.params.id]);
     } catch (dbErr) {
