@@ -65,17 +65,21 @@ async function getCategories() {
 function notifyGreenwood(type, action, campus, data) {
   const url = process.env.GREENWOOD_WEBHOOK_URL;
   const secret = process.env.GREENWOOD_WEBHOOK_SECRET;
-  if (!url || !secret) return;
+  if (!url || !secret) { console.log('[GHS Webhook] Skipped — URL or secret not set'); return; }
   const payload = JSON.stringify({ type, action, campus, data, secret });
   try {
     const u = new URL(url);
     const opts = { hostname: u.hostname, path: u.pathname, method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } };
-    const req = https.request(opts);
-    req.on('error', () => {});
+    const req = https.request(opts, res => {
+      let body = '';
+      res.on('data', chunk => { body += chunk; });
+      res.on('end', () => console.log(`[GHS Webhook] ${type}/${action} → ${res.statusCode} ${body.substring(0,120)}`));
+    });
+    req.on('error', e => console.error('[GHS Webhook] Error:', e.message));
     req.write(payload);
     req.end();
-  } catch { /* non-critical */ }
+  } catch (e) { console.error('[GHS Webhook] Exception:', e.message); }
 }
 
 // ── Unique slug helper ─────────────────────────────────
@@ -327,6 +331,23 @@ exports.publishArticle = async (req, res) => {
     published_at: now.toISOString(),
   });
   res.redirect('/admin/articles');
+};
+
+exports.resyncArticle = async (req, res) => {
+  const article = await q1(
+    `SELECT a.*, c.name AS cat_name FROM articles a LEFT JOIN categories c ON a.category_id=c.id WHERE a.id=? AND a.status='published'`,
+    [req.params.id]);
+  if (!article) return res.redirect('/admin/articles?error=Article+not+found+or+not+published');
+  notifyGreenwood('article', 'publish', 'all', {
+    gtimes_id:    String(article.id),
+    title:        article.title,
+    excerpt:      article.excerpt,
+    gtimes_url:   `https://gtimes.in/article/${article.slug}`,
+    category:     article.cat_name || 'news',
+    image_url:    article.cover_image ? `https://gtimes.in/uploads/articles/${article.cover_image}` : null,
+    published_at: new Date(article.published_at).toISOString(),
+  });
+  res.redirect('/admin/articles?success=Resynced+to+GHS');
 };
 
 exports.unpublishArticle = async (req, res) => {

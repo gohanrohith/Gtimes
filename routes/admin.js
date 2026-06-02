@@ -46,6 +46,7 @@ router.post('/articles/:id/edit',     ctrl.updateArticle);
 router.post('/articles/:id/submit-review', ctrl.submitForReview);
 router.post('/articles/:id/publish',       ctrl.publishArticle);
 router.post('/articles/:id/unpublish',     ctrl.unpublishArticle);
+router.post('/articles/:id/resync',        ctrl.resyncArticle);
 router.post('/articles/:id/delete',   ctrl.deleteArticle);
 
 // Events
