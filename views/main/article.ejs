@@ -87,8 +87,13 @@
 <div id="gt-progress-bar"></div>
 <%- include('../partials/nav') %>
 <% if (typeof isPreview !== 'undefined' && isPreview) { %>
-<div style="background:#e67e22;color:#fff;text-align:center;padding:.6rem 1rem;font-size:.85rem;font-weight:600;position:sticky;top:0;z-index:100">
-  <i class="fas fa-eye"></i> Preview Mode — This article is not published yet.
+<div style="background:<%= article.status==='published'?'#00663A':'#e67e22' %>;color:#fff;text-align:center;padding:.6rem 1rem;font-size:.85rem;font-weight:600;position:sticky;top:0;z-index:100">
+  <i class="fas fa-eye"></i>
+  <% if (article.status === 'published') { %>
+    Preview — This article is live and visible to readers.
+  <% } else { %>
+    Preview Mode — This article is not published yet.
+  <% } %>
   <a href="/admin/articles/<%= article.id %>/edit" style="color:#fff;text-decoration:underline;margin-left:1rem">Back to Editor</a>
 </div>
 <% } %>

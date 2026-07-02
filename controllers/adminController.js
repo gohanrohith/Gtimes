@@ -302,6 +302,19 @@ exports.updateArticle = (req, res) => {
     if (req.body.tags !== undefined) {
       await saveTags(req.params.id, req.body.tags);
     }
+    if (req.body.also_publish === '1' && ['editor', 'super'].includes(req.session.adminRole)) {
+      const now = new Date();
+      await q(`UPDATE articles SET status='published', published_at=COALESCE(published_at,?), scheduled_at=NULL WHERE id=?`, [now, req.params.id]);
+      notifyGreenwood('article', 'publish', 'all', {
+        gtimes_id:    String(req.params.id),
+        title,
+        excerpt:      excerpt || null,
+        gtimes_url:   `https://gtimes.in/article/${slug}`,
+        category:     'news',
+        image_url:    cover ? `https://gtimes.in/uploads/articles/${cover}` : null,
+        published_at: now.toISOString(),
+      });
+    }
     res.redirect('/admin/articles');
   });
 };

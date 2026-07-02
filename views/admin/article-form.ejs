@@ -49,9 +49,10 @@
 
     <form action="<%= article ? '/admin/articles/'+article.id+'/edit' : '/admin/articles/new' %>?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data" id="articleForm">
       <!-- Hidden inputs — synced from Quill on submit -->
-      <input type="hidden" name="content"    id="inputEn">
-      <input type="hidden" name="content_hi" id="inputHi">
-      <input type="hidden" name="content_te" id="inputTe">
+      <input type="hidden" name="content"      id="inputEn">
+      <input type="hidden" name="content_hi"   id="inputHi">
+      <input type="hidden" name="content_te"   id="inputTe">
+      <input type="hidden" name="also_publish" id="alsoPublish" value="">
 
       <div class="gt-form-2col">
 
@@ -131,7 +132,7 @@
             <% const canPublish = locals.adminRole === 'editor' || locals.adminRole === 'super'; %>
             <% if (article) { %>
               <% if (canPublish && article.status !== 'published') { %>
-              <button type="submit" form="publishForm" class="btn btn-success" style="width:100%;justify-content:center;margin-top:.5rem"><i class="fas fa-check"></i> Publish Now</button>
+              <button type="button" onclick="document.getElementById('alsoPublish').value='1';document.getElementById('articleForm').requestSubmit()" class="btn btn-success" style="width:100%;justify-content:center;margin-top:.5rem"><i class="fas fa-check"></i> Publish Now</button>
               <% } else if (!canPublish && article.status === 'draft') { %>
               <button type="submit" form="reviewForm" class="btn btn-outline" style="width:100%;justify-content:center;margin-top:.5rem"><i class="fas fa-paper-plane"></i> Submit for Review</button>
               <% } %>
