@@ -446,8 +446,13 @@ exports.updateEvent = (req, res) => {
     let cover = ev.cover_image;
     if (req.files?.[0]) {
       const fp = path.join(UPLOADS_BASE, 'events', req.files[0].filename);
-      if (isValidImage(fp)) { cover = req.files[0].filename; }
-      else { fs.unlinkSync(fp); }
+      if (isValidImage(fp)) {
+        if (ev.cover_image && ev.cover_image !== req.files[0].filename) {
+          const old = path.join(UPLOADS_BASE, 'events', ev.cover_image);
+          if (fs.existsSync(old)) fs.unlinkSync(old);
+        }
+        cover = req.files[0].filename;
+      } else { fs.unlinkSync(fp); }
     }
     await q(`UPDATE events SET title=?, description=?, cover_image=?, location=?, event_date=?, event_time=?, campus=?, status=?, featured=? WHERE id=?`,
       [title, description || null, cover, location || null, event_date || null,
@@ -457,7 +462,12 @@ exports.updateEvent = (req, res) => {
 };
 
 exports.deleteEvent = async (req, res) => {
-  await q('DELETE FROM events WHERE id=?', [req.params.id]);
+  const ev = await q1('SELECT cover_image FROM events WHERE id=?', [req.params.id]);
+  await query('DELETE FROM events WHERE id=?', [req.params.id]);
+  if (ev?.cover_image) {
+    const fp = path.join(UPLOADS_BASE, 'events', ev.cover_image);
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  }
   res.redirect('/admin/events');
 };
 
@@ -521,7 +531,14 @@ exports.uploadPhotos = (req, res) => {
 };
 
 exports.deleteAlbum = async (req, res) => {
-  await q('UPDATE gallery_albums SET is_active=0 WHERE id=?', [req.params.id]);
+  const id = req.params.id;
+  const photos = await q('SELECT filename FROM gallery_photos WHERE album_id=?', [id]);
+  photos.forEach(p => {
+    const fp = path.join(UPLOADS_BASE, 'gallery', p.filename);
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  });
+  await q('DELETE FROM gallery_photos WHERE album_id=?', [id]);
+  await query('DELETE FROM gallery_albums WHERE id=?', [id]);
   res.redirect('/admin/gallery');
 };
 
@@ -804,7 +821,12 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   if (parseInt(req.params.id) === req.session.adminId) return res.redirect('/admin/users');
-  await q('DELETE FROM admins WHERE id=?', [req.params.id]);
+  const user = await q1('SELECT avatar FROM admins WHERE id=?', [req.params.id]);
+  await query('DELETE FROM admins WHERE id=?', [req.params.id]);
+  if (user?.avatar) {
+    const fp = path.join(UPLOADS_BASE, 'avatars', user.avatar);
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  }
   res.redirect('/admin/users');
 };
 
@@ -830,6 +852,11 @@ exports.saveProfile = (req, res) => {
       else { fs.unlinkSync(fp); }
     }
     if (avatar) {
+      const current = await q1('SELECT avatar FROM admins WHERE id=?', [req.session.adminId]);
+      if (current?.avatar) {
+        const old = path.join(UPLOADS_BASE, 'avatars', current.avatar);
+        if (fs.existsSync(old)) fs.unlinkSync(old);
+      }
       await q('UPDATE admins SET name=?, bio=?, avatar=? WHERE id=?', [name, bio || null, avatar, req.session.adminId]);
     } else {
       await q('UPDATE admins SET name=?, bio=? WHERE id=?', [name, bio || null, req.session.adminId]);
@@ -913,7 +940,9 @@ exports.tagsList = async (req, res) => {
 };
 
 exports.deleteTag = async (req, res) => {
-  await q('DELETE FROM tags WHERE id=?', [req.params.id]);
+  const id = req.params.id;
+  await q('DELETE FROM article_tags WHERE tag_id=?', [id]);
+  await query('DELETE FROM tags WHERE id=?', [id]);
   res.redirect('/admin/tags?success=1');
 };
 
