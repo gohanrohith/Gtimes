@@ -22,6 +22,7 @@
     <% if (success) { %>
     <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
     <% } %>
+    <% if (error) { %><div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
 
     <!-- Campus filter -->
     <% const CAMPUSES = ['Hasanparthy','Hunter Road','Mancherial','Gopalpur','Naimnagar']; %>

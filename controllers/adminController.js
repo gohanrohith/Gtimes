@@ -313,7 +313,7 @@ exports.submitForReview = async (req, res) => {
 
 exports.publishArticle = async (req, res) => {
   if (!['editor', 'super'].includes(req.session.adminRole)) {
-    return res.redirect('/articles?error=Only+editors+and+super+admins+can+publish');
+    return res.redirect('/admin/articles?error=Only+editors+and+super+admins+can+publish');
   }
   const article = await q1(
     `SELECT a.*, c.name AS cat_name FROM articles a LEFT JOIN categories c ON a.category_id=c.id WHERE a.id=?`,
@@ -416,6 +416,7 @@ exports.updateEvent = (req, res) => {
     const ev = await q1('SELECT * FROM events WHERE id=?', [req.params.id]);
     if (!ev) return res.redirect('/admin/events');
     const { title, description, location, event_date, event_time, campus, status, featured } = req.body;
+    if (!title) return res.redirect(`/admin/events/${req.params.id}/edit?error=Title+is+required`);
     let cover = ev.cover_image;
     if (req.files?.[0]) {
       const fp = path.join(UPLOADS_BASE, 'events', req.files[0].filename);
@@ -712,6 +713,7 @@ exports.previewArticle = async (req, res) => {
     success: null, error: null,
     domain,
     canonicalUrl: `${domain}/article/${article.slug}`,
+    shortUrl: `${domain}/p/${article.short_slug || article.id}`,
     isPreview: true,
   });
 };
@@ -762,11 +764,15 @@ exports.editUserForm = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   const { name, role, new_password } = req.body;
-  await q('UPDATE admins SET name=?, role=? WHERE id=?', [name, role || 'author', req.params.id]);
+  const targetId = parseInt(req.params.id);
+  const isSelf = targetId === req.session.adminId;
+  const safeRole = isSelf ? 'super' : (role || 'author');
+  await q('UPDATE admins SET name=?, role=? WHERE id=?', [name, safeRole, targetId]);
   if (new_password && new_password.length >= 8) {
     const hash = await bcrypt.hash(new_password, 10);
-    await q('UPDATE admins SET password=? WHERE id=?', [hash, req.params.id]);
+    await q('UPDATE admins SET password=? WHERE id=?', [hash, targetId]);
   }
+  if (isSelf) req.session.adminName = name;
   res.redirect('/admin/users?success=1');
 };
 

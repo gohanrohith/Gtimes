@@ -197,8 +197,11 @@
                 oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/-{2,}/g,'-')">
             </div>
             <div style="font-size:.75rem;color:var(--gt-gray);background:var(--gt-off);border-radius:4px;padding:.4rem .6rem;word-break:break-all">
-              gtimes.in/p/<span id="shortSlugPreview" style="color:var(--gt-ink);font-weight:600"><%= article?.short_slug || '<name>' %></span>
+              gtimes.in/p/<span id="shortSlugPreview" style="color:var(--gt-ink);font-weight:600"><%= article?.short_slug || (article?.id ? article.id : '&lt;name&gt;') %></span>
             </div>
+            <% if (article?.id && !article?.short_slug) { %>
+            <small style="font-size:.7rem;color:var(--gt-gray);display:block;margin-top:.3rem"><i class="fas fa-info-circle"></i> Using ID-based URL by default. Set a custom name above to replace it.</small>
+            <% } %>
           </div>
         </div>
 
@@ -345,8 +348,9 @@ updateWordCount();
 const shortSlugInput = document.getElementById('shortSlugInput');
 const shortSlugPreview = document.getElementById('shortSlugPreview');
 if (shortSlugInput && shortSlugPreview) {
+  const slugFallback = '<%= article?.id ? article.id : "<name>" %>';
   shortSlugInput.addEventListener('input', function() {
-    shortSlugPreview.textContent = this.value || '<name>';
+    shortSlugPreview.textContent = this.value || slugFallback;
   });
 }
 

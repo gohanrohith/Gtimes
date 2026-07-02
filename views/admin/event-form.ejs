@@ -26,6 +26,7 @@
       </ul>
     </div>
     <% } %>
+    <% if (error) { %><div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
 
     <form action="<%= event ? '/admin/events/'+event.id+'/edit' : '/admin/events/new' %>?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
 
@@ -78,6 +79,12 @@
                 <option value="ongoing" <%= event?.status==='ongoing'?'selected':'' %>>Ongoing</option>
                 <option value="completed" <%= event?.status==='completed'?'selected':'' %>>Completed</option>
               </select>
+            </div>
+            <div class="gt-form-group">
+              <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
+                <input type="checkbox" name="featured" value="1" <%= event?.featured?'checked':'' %> style="width:auto">
+                Mark as Featured Event
+              </label>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
               <i class="fas fa-save"></i> <%= event ? 'Save Changes' : 'Create Event' %>

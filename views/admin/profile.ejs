@@ -19,6 +19,7 @@
     <% if (success) { %>
     <div class="gt-alert gt-alert-success"><i class="fas fa-check-circle"></i> Profile saved.</div>
     <% } %>
+    <% if (error) { %><div class="gt-alert gt-alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
 
     <div class="gt-admin-card" style="max-width:520px">
       <form action="/admin/profile?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
