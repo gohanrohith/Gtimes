@@ -158,7 +158,7 @@
         <!-- Share + Print -->
         <div class="gt-share-area" style="margin-top:1.5rem;padding:1.25rem;background:var(--gt-off);border-radius:var(--gt-radius);display:flex;flex-wrap:wrap;gap:.6rem;align-items:center">
           <span style="font-size:.82rem;font-weight:700;color:var(--gt-dark);margin-right:.25rem">Share:</span>
-          <a href="https://wa.me/?text=<%= encodeURIComponent(article.title + ' ' + shortUrl) %>" target="_blank" rel="noopener" class="gt-share-btn" style="background:#25D366;color:#fff"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+          <a href="https://wa.me/?text=<%= encodeURIComponent(article.title + '\n' + shortUrl) %>" target="_blank" rel="noopener" class="gt-share-btn" style="background:#25D366;color:#fff"><i class="fab fa-whatsapp"></i> WhatsApp</a>
           <a href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(article.title) %>&url=<%= encodeURIComponent(shortUrl) %>" target="_blank" rel="noopener" class="gt-share-btn" style="background:#1DA1F2;color:#fff"><i class="fab fa-x-twitter"></i> Twitter</a>
           <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(shortUrl) %>" target="_blank" rel="noopener" class="gt-share-btn" style="background:#1877F2;color:#fff"><i class="fab fa-facebook-f"></i> Facebook</a>
           <button onclick="copyLink('<%= shortUrl %>')" class="gt-share-btn" style="background:var(--gt-dark);color:#fff"><i class="fas fa-link"></i> <span id="copyLabel">Copy Link</span></button>

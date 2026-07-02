@@ -182,15 +182,52 @@ exports.article = async (req, res) => {
   });
 };
 
-// ── Short URL redirect ───────────────────────────────────
+// ── Short URL — serve article directly (no redirect) ────
 exports.shortArticle = async (req, res) => {
   const param = req.params.id;
   const isNumeric = /^\d+$/.test(param);
-  const article = isNumeric
-    ? await q1('SELECT slug FROM articles WHERE id=? AND status=?', [parseInt(param), 'published'])
-    : await q1('SELECT slug FROM articles WHERE short_slug=? AND status=?', [param, 'published']);
+
+  const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
+  const article = await q1(
+    `SELECT a.*, c.name AS cat_name, c.slug AS cat_slug, c.color AS cat_color,
+            adm.username AS author_username, adm.bio AS author_bio, adm.avatar AS author_avatar
+     FROM articles a
+     LEFT JOIN categories c ON a.category_id = c.id
+     LEFT JOIN admins adm ON a.created_by = adm.id
+     WHERE ${isNumeric ? 'a.id=?' : 'a.short_slug=?'} AND a.status='published'`,
+    [isNumeric ? parseInt(param) : param]
+  );
   if (!article) return res.status(404).render('404', { title: '404 | GTimes' });
-  res.redirect(301, `/article/${article.slug}`);
+
+  q('UPDATE articles SET views = views + 1 WHERE id=?', [article.id]).catch(() => {});
+
+  const [comments, related, tags] = await Promise.all([
+    q(`SELECT * FROM comments WHERE article_id=? AND status='approved' ORDER BY created_at ASC`, [article.id]),
+    q(`SELECT a.*, c.name AS cat_name, c.slug AS cat_slug, c.color AS cat_color
+       FROM articles a LEFT JOIN categories c ON a.category_id = c.id
+       WHERE a.status='published' AND a.id != ? AND a.category_id = ?
+       ORDER BY a.published_at DESC LIMIT 3`, [article.id, article.category_id || 0]),
+    getArticleTags(article.id),
+  ]);
+
+  const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : `http://localhost:${process.env.PORT || 3001}`;
+
+  article.content    = await processInlineGalleries(article.content);
+  article.content_hi = await processInlineGalleries(article.content_hi);
+  article.content_te = await processInlineGalleries(article.content_te);
+
+  const shortUrl = `${domain}/p/${article.short_slug || article.id}`;
+
+  res.render('main/article', {
+    title: `${article.title} | ${settings.site_name || 'GTimes'}`,
+    settings, categories, article: { ...article, reading_time: readingTime(article.content) },
+    comments, related: withReadingTime(related), tags,
+    success: req.query.success || null,
+    error:   req.query.error   || null,
+    domain,
+    canonicalUrl: `${domain}/article/${article.slug}`,
+    shortUrl,
+  });
 };
 
 // ── Post comment ─────────────────────────────────────────
