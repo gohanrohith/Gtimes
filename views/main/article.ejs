@@ -237,7 +237,7 @@
         <div class="gt-sidebar-section" style="background:var(--gt-white);border-radius:var(--gt-radius-lg);padding:1.25rem;box-shadow:var(--gt-shadow)">
           <h4>Related Articles</h4>
           <% related.forEach(r => { %>
-          <a href="/article/<%= r.slug %>" class="gt-sidebar-article" style="text-decoration:none;display:flex;gap:.75rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--gt-light)">
+          <a href="/p/<%= r.short_slug || r.id %>" class="gt-sidebar-article" style="text-decoration:none;display:flex;gap:.75rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--gt-light)">
             <div class="gt-sidebar-thumb">
               <% if (r.cover_image) { %><img src="/uploads/articles/<%= r.cover_image %>" alt="<%= r.title %>" onerror="this.style.display='none'"><% } %>
             </div>
