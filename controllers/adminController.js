@@ -369,8 +369,21 @@ exports.unpublishArticle = async (req, res) => {
 };
 
 exports.deleteArticle = async (req, res) => {
-  await q('DELETE FROM articles WHERE id=?', [req.params.id]);
-  res.redirect('/admin/articles');
+  const id = req.params.id;
+  const article = await q1('SELECT cover_image FROM articles WHERE id=?', [id]);
+  // Remove related rows first so the delete works even without CASCADE in the live DB
+  await q('DELETE FROM article_tags WHERE article_id=?', [id]);
+  await q('DELETE FROM comments    WHERE article_id=?', [id]);
+  const result = await query('DELETE FROM articles WHERE id=?', [id]);
+  // Clean up cover image file from disk
+  if (article?.cover_image) {
+    const imgPath = path.join(UPLOADS_BASE, 'articles', article.cover_image);
+    if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+  }
+  if (result.affectedRows === 0) {
+    return res.redirect('/admin/articles?error=Article+not+found+or+already+deleted');
+  }
+  res.redirect('/admin/articles?success=Article+deleted');
 };
 
 // ── Events ─────────────────────────────────────────────
