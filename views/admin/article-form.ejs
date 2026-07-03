@@ -226,6 +226,8 @@
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script src="/js/admin.js"></script>
 <script>
+const CSRF = '<%= csrfToken %>';
+
 const toolbarOptions = [
   [{ header: [2, 3, false] }],
   ['bold', 'italic', 'underline'],
@@ -233,6 +235,30 @@ const toolbarOptions = [
   ['blockquote', 'link', 'image'],
   ['clean']
 ];
+
+// Register custom Gallery blot so Quill 2 preserves <div class="gt-inline-gallery">
+(function() {
+  const BlockEmbed = Quill.import('blots/block/embed');
+  class GalleryBlot extends BlockEmbed {
+    static create(value) {
+      const node = super.create();
+      const albumId = (typeof value === 'object') ? value.albumId : value;
+      const title   = (typeof value === 'object' && value.title) ? value.title : '';
+      node.setAttribute('data-album', albumId);
+      if (title) node.setAttribute('data-title', title);
+      node.setAttribute('contenteditable', 'false');
+      node.innerHTML = `<span style="display:flex;align-items:center;gap:.5rem;padding:.6rem 1rem;background:#f0f9f4;border:2px dashed #00663A;border-radius:6px;color:#00663A;font-size:.82rem;font-weight:600;pointer-events:none"><i class="fas fa-images"></i> Gallery: ${title || 'Album #' + albumId}</span>`;
+      return node;
+    }
+    static value(domNode) {
+      return { albumId: domNode.getAttribute('data-album'), title: domNode.getAttribute('data-title') || '' };
+    }
+  }
+  GalleryBlot.blotName = 'gallery';
+  GalleryBlot.tagName  = 'div';
+  GalleryBlot.className = 'gt-inline-gallery';
+  Quill.register(GalleryBlot);
+})();
 
 // Briefly make all panels block+off-screen so Quill can measure them during init
 ['tab-hi', 'tab-te'].forEach(id => {
@@ -247,7 +273,9 @@ function makeImageHandler(quill) {
     input.onchange = () => {
       const file = input.files[0];
       if (!file) return;
-      const fd = new FormData(); fd.append('image', file);
+      const fd = new FormData();
+      fd.append('image', file);
+      fd.append('_csrf', CSRF);
       fetch('/admin/articles/upload-image', { method: 'POST', body: fd })
         .then(r => r.json())
         .then(data => {
@@ -440,11 +468,9 @@ document.getElementById('coverInput')?.addEventListener('change', function() {
     const quill = activeQuill || window.quillEn;
     if (!quill) return;
     const range = quill.getSelection(true);
-    const idx   = range ? range.index : quill.getLength();
-    quill.insertEmbed(idx, 'block', '\n', Quill.sources.USER);
-    quill.clipboard.dangerouslyPasteHTML(idx,
-      `<div class="gt-inline-gallery" data-album="${albumId}"></div>`);
-    quill.setSelection(idx + 2, Quill.sources.SILENT);
+    const idx   = range ? range.index : quill.getLength() - 1;
+    quill.insertEmbed(idx, 'gallery', { albumId, title: albumTitle }, Quill.sources.USER);
+    quill.setSelection(idx + 1, Quill.sources.SILENT);
     modal.style.display = 'none';
   }
 })();
