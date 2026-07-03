@@ -279,8 +279,7 @@ function makeImageHandler(quill) {
       if (!file) return;
       const fd = new FormData();
       fd.append('image', file);
-      fd.append('_csrf', CSRF);
-      fetch('/admin/articles/upload-image', { method: 'POST', body: fd })
+      fetch('/admin/articles/upload-image', { method: 'POST', body: fd, headers: { 'x-csrf-token': CSRF } })
         .then(r => r.json())
         .then(data => {
           if (data.url) {
@@ -295,9 +294,9 @@ function makeImageHandler(quill) {
   };
 }
 
-const quillEn = new Quill('#quillEn', { theme: 'snow', modules: { toolbar: toolbarOptions } });
-const quillHi = new Quill('#quillHi', { theme: 'snow', modules: { toolbar: toolbarOptions } });
-const quillTe = new Quill('#quillTe', { theme: 'snow', modules: { toolbar: toolbarOptions } });
+window.quillEn = new Quill('#quillEn', { theme: 'snow', modules: { toolbar: toolbarOptions } });
+window.quillHi = new Quill('#quillHi', { theme: 'snow', modules: { toolbar: toolbarOptions } });
+window.quillTe = new Quill('#quillTe', { theme: 'snow', modules: { toolbar: toolbarOptions } });
 
 quillEn.getModule('toolbar').addHandler('image', makeImageHandler(quillEn));
 quillHi.getModule('toolbar').addHandler('image', makeImageHandler(quillHi));
