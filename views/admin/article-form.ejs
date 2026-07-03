@@ -236,8 +236,10 @@ const toolbarOptions = [
   ['clean']
 ];
 
-// Register custom Gallery blot so Quill 2 preserves <div class="gt-inline-gallery">
-(function() {
+// Register custom Gallery blot — use <figure> to avoid conflict with Quill's Block <div>
+// Wrapped in try-catch so a failure never blocks Quill from initialising.
+let _galleryBlotOk = false;
+try {
   const BlockEmbed = Quill.import('blots/block/embed');
   class GalleryBlot extends BlockEmbed {
     static create(value) {
@@ -246,19 +248,21 @@ const toolbarOptions = [
       const title   = (typeof value === 'object' && value.title) ? value.title : '';
       node.setAttribute('data-album', albumId);
       if (title) node.setAttribute('data-title', title);
-      node.setAttribute('contenteditable', 'false');
-      node.innerHTML = `<span style="display:flex;align-items:center;gap:.5rem;padding:.6rem 1rem;background:#f0f9f4;border:2px dashed #00663A;border-radius:6px;color:#00663A;font-size:.82rem;font-weight:600;pointer-events:none"><i class="fas fa-images"></i> Gallery: ${title || 'Album #' + albumId}</span>`;
+      node.innerHTML = '<span style="display:flex;align-items:center;gap:.5rem;padding:.6rem 1rem;background:#f0f9f4;border:2px dashed #00663A;border-radius:6px;color:#00663A;font-size:.82rem;font-weight:600;pointer-events:none"><i class="fas fa-images"></i> Gallery: ' + (title || 'Album #' + albumId) + '</span>';
       return node;
     }
     static value(domNode) {
       return { albumId: domNode.getAttribute('data-album'), title: domNode.getAttribute('data-title') || '' };
     }
   }
-  GalleryBlot.blotName = 'gallery';
-  GalleryBlot.tagName  = 'div';
+  GalleryBlot.blotName  = 'gallery';
+  GalleryBlot.tagName   = 'figure';
   GalleryBlot.className = 'gt-inline-gallery';
   Quill.register(GalleryBlot);
-})();
+  _galleryBlotOk = true;
+} catch(e) {
+  console.warn('GalleryBlot registration failed:', e);
+}
 
 // Briefly make all panels block+off-screen so Quill can measure them during init
 ['tab-hi', 'tab-te'].forEach(id => {
@@ -429,8 +433,12 @@ document.getElementById('coverInput')?.addEventListener('change', function() {
   const modal     = document.getElementById('galleryModal');
   const albumList = document.getElementById('galleryAlbumList');
   let loaded = false;
+  let savedRange = null;
 
   document.getElementById('insertGalleryBtn').addEventListener('click', () => {
+    // Capture selection BEFORE modal opens and steals focus
+    const aq = activeQuill || window.quillEn;
+    savedRange = aq ? aq.getSelection() : null;
     modal.style.display = 'flex';
     if (!loaded) {
       loaded = true;
@@ -465,13 +473,16 @@ document.getElementById('coverInput')?.addEventListener('change', function() {
   modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
 
   function insertGallery(albumId, albumTitle) {
+    modal.style.display = 'none';  // always close first
     const quill = activeQuill || window.quillEn;
     if (!quill) return;
-    const range = quill.getSelection(true);
-    const idx   = range ? range.index : quill.getLength() - 1;
-    quill.insertEmbed(idx, 'gallery', { albumId, title: albumTitle }, Quill.sources.USER);
-    quill.setSelection(idx + 1, Quill.sources.SILENT);
-    modal.style.display = 'none';
+    const idx = savedRange ? savedRange.index : Math.max(0, quill.getLength() - 1);
+    try {
+      quill.insertEmbed(idx, 'gallery', { albumId, title: albumTitle }, Quill.sources.USER);
+      quill.setSelection(idx + 1, Quill.sources.SILENT);
+    } catch(e) {
+      console.error('Gallery insert failed:', e);
+    }
   }
 })();
 </script>

@@ -119,8 +119,8 @@ exports.articles = async (req, res) => {
 // ── Inline gallery processor ─────────────────────────────
 async function processInlineGalleries(content) {
   if (!content) return content;
-  const regex = /<div class="gt-inline-gallery" data-album="(\d+)"[^>]*>[\s\S]*?<\/div>/gi;
-  const matches = [...content.matchAll(/<div class="gt-inline-gallery" data-album="(\d+)"[^>]*>[\s\S]*?<\/div>/gi)];
+  const regex = /<(?:div|figure) class="gt-inline-gallery" data-album="(\d+)"[^>]*>[\s\S]*?<\/(?:div|figure)>/gi;
+  const matches = [...content.matchAll(/<(?:div|figure) class="gt-inline-gallery" data-album="(\d+)"[^>]*>[\s\S]*?<\/(?:div|figure)>/gi)];
   if (!matches.length) return content;
   const albumIds = [...new Set(matches.map(m => parseInt(m[1])))];
   const galleries = {};
