@@ -25,43 +25,37 @@ npm run dev    # http://localhost:3001
 ## Integration with Greenwood
 GTimes publishes articles/events → sends webhook to Greenwood:
 - `POST /api/gtimes/sync` on Greenwood (rate limited)
-- Uses `GTIMES_WEBHOOK_SECRET` (must match in both `.env` files)
+- Uses `GTIMES_WEBHOOK_SECRET` (set and matched in both `.env` files ✅)
 
 Upload dirs: `articles`, `events`, `gallery`, `avatars`, `videos`
 
 ---
 
 ## Current Status
-**Live at `gtimes.in`** — deployed and publicly accessible.
+**Live at `gtimes.in`** — fully deployed, content loaded, webhook active.
 
-Open items:
-- Content from client still pending (logo, favicon, about text, default cover image, social handles)
-- Webhook secrets not yet matched between GTimes and Greenwood `.env` files
-- End-to-end testing checklist not fully run
+All major development and configuration is complete. No known open bugs.
 
 ---
 
 ## Last Session (2026-08-15)
 
 ### Fixes & Features
-- **OG image fix** — `og:image` and `twitter:image` now always emitted on article pages.
-  Articles with cover image use it; articles without use `/images/default-cover.jpg` as fallback.
-  Also added `og:image:width/height` hints. JSON-LD `image` field also always set.
-- **Image protection** — right-click "Save Image As" disabled via JS contextmenu listener;
-  iOS long-press save blocked via `-webkit-touch-callout: none` CSS;
-  drag-to-desktop blocked via `-webkit-user-drag: none`.
-- **Footer copyright** — added "All photographs and content… Unauthorised reproduction strictly prohibited."
-- **Bento inline gallery** — replaced plain auto-fill grid with bento layout:
-  1 big image (left) + up to 4 uniform squares (right); last square shows `+N` when album > 5 photos;
-  all photos accessible via lightbox (counter shown); mobile collapses gracefully.
-  Album page (`/gallery/:slug`) gallery is unchanged.
+- **OG image fix** — `og:image` always emitted; cover image if present, else `/images/default-cover.jpg` fallback. Added `og:image:width/height`. JSON-LD `image` also always set.
+- **Image protection** — right-click disabled (JS), iOS long-press blocked (CSS), drag blocked (CSS), footer copyright notice added.
+- **Bento inline gallery** — replaces plain grid in articles: 1 big + 4 uniform squares + `+N` overflow, lightbox browses all photos with counter.
+- **Webhook delete fix** — `deleteArticle`, `unpublishArticle`, `deleteEvent` now all call `notifyGreenwood` so GHS deactivates content when removed from GTimes.
+- **GHS cleanup** — manually deactivated the sample test article (gtimes_id=4) from GHS database via phpMyAdmin.
+- **Content & secrets** — client-provided logo, favicon, about text, social handles, default cover image all set. `GTIMES_WEBHOOK_SECRET` matched in both `.env` files.
 
-### Commits
+### Commits (2026-08-15)
 | Hash | Description |
 |---|---|
 | `5d34138` | fix: always emit og:image with fallback |
 | `bae7520` | feat: right-click disable + footer copyright |
 | `13e4793` | feat: bento inline gallery in articles |
+| `2463219` | docs: update MEMORY.md and todo.md |
+| `a30c4f4` | fix: notify GHS on article unpublish/delete and event delete |
 
 ---
 
@@ -72,7 +66,7 @@ Open items:
 | `routes/main.js` | Public site routes |
 | `routes/admin.js` | Admin panel routes |
 | `routes/api.js` | Webhook endpoint |
-| `controllers/adminController.js` | Admin actions |
+| `controllers/adminController.js` | Admin actions + `notifyGreenwood()` |
 | `controllers/mainController.js` | Public pages + `processInlineGalleries()` |
 | `public/css/main.css` | All site styles incl. bento gallery |
 | `public/js/main.js` | Lightbox (album + bento), nav, videos |
