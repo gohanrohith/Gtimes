@@ -95,6 +95,8 @@ Live at `gtimes.in` and `admin.gtimes.in` with SSL, Nginx, PM2.
 - [x] Webhook deactivates on GHS when deleted/unpublished (fix verified)
 - [x] Multi-language toggle working
 - [x] Image right-click protection active
+- [x] Cover image appears at top of article on mobile (below title/meta, above content)
+- [x] Bento gallery shows in Hindi / Telugu language tabs (auto-injected from English content)
 
 ---
 

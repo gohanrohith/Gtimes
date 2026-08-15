@@ -56,6 +56,11 @@ All major development and configuration is complete. No known open bugs.
 | `13e4793` | feat: bento inline gallery in articles |
 | `2463219` | docs: update MEMORY.md and todo.md |
 | `a30c4f4` | fix: notify GHS on article unpublish/delete and event delete |
+| `4566bfa` | fix: move cover image to top of article, share galleries across language tabs |
+
+### Additional fixes (same session)
+- **Cover image to top** — moved from `<aside>` to inside `<article>`, right after title/meta and before language toggle. Uses existing `.gt-article-cover` class. Works correctly on both desktop and mobile.
+- **Gallery in Hindi/Telugu** — new `injectMissingGalleries(rawEn, transContent)` helper in `mainController.js`. Before `processInlineGalleries()` runs on translations, it copies any `gt-inline-gallery` embed tags from the raw English content into translations that don't already have them. Galleries are language-neutral; they now appear in all language tabs automatically without the admin needing to insert the embed in each Quill tab manually.
 
 ---
 
