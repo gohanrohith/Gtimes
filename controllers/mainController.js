@@ -116,6 +116,15 @@ exports.articles = async (req, res) => {
   });
 };
 
+// Copy gallery embed tags from English content into a translation
+// if the translation doesn't already have them (galleries are language-neutral)
+function injectMissingGalleries(rawEn, transContent) {
+  if (!transContent || !rawEn) return transContent;
+  if (/class="gt-inline-gallery"/.test(transContent)) return transContent; // already has galleries
+  const embeds = rawEn.match(/<(?:div|figure)\s[^>]*class="gt-inline-gallery"[^>]*>[\s\S]*?<\/(?:div|figure)>/gi) || [];
+  return embeds.length ? transContent + embeds.join('') : transContent;
+}
+
 // ── Inline gallery processor ─────────────────────────────
 async function processInlineGalleries(content) {
   if (!content) return content;
@@ -196,9 +205,10 @@ exports.article = async (req, res) => {
 
   const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : `http://localhost:${process.env.PORT || 3001}`;
 
+  const rawContent   = article.content; // save raw before processing so we can inject into translations
   article.content    = await processInlineGalleries(article.content);
-  article.content_hi = await processInlineGalleries(article.content_hi);
-  article.content_te = await processInlineGalleries(article.content_te);
+  article.content_hi = await processInlineGalleries(injectMissingGalleries(rawContent, article.content_hi));
+  article.content_te = await processInlineGalleries(injectMissingGalleries(rawContent, article.content_te));
 
   res.render('main/article', {
     title: `${article.title} | ${settings.site_name || 'GTimes'}`,
@@ -242,9 +252,10 @@ exports.shortArticle = async (req, res) => {
 
   const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : `http://localhost:${process.env.PORT || 3001}`;
 
+  const rawContentS  = article.content;
   article.content    = await processInlineGalleries(article.content);
-  article.content_hi = await processInlineGalleries(article.content_hi);
-  article.content_te = await processInlineGalleries(article.content_te);
+  article.content_hi = await processInlineGalleries(injectMissingGalleries(rawContentS, article.content_hi));
+  article.content_te = await processInlineGalleries(injectMissingGalleries(rawContentS, article.content_te));
 
   const shortUrl = `${domain}/p/${article.short_slug || article.id}`;
 
