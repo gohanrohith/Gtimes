@@ -365,12 +365,15 @@ exports.resyncArticle = async (req, res) => {
 
 exports.unpublishArticle = async (req, res) => {
   await q(`UPDATE articles SET status='draft', scheduled_at=NULL WHERE id=?`, [req.params.id]);
+  notifyGreenwood('article', 'delete', 'all', { gtimes_id: String(req.params.id) });
   res.redirect('/admin/articles');
 };
 
 exports.deleteArticle = async (req, res) => {
   const id = req.params.id;
   const article = await q1('SELECT cover_image FROM articles WHERE id=?', [id]);
+  // Notify GHS to deactivate before removing locally
+  notifyGreenwood('article', 'delete', 'all', { gtimes_id: String(id) });
   // Remove related rows first so the delete works even without CASCADE in the live DB
   await q('DELETE FROM article_tags WHERE article_id=?', [id]);
   await q('DELETE FROM comments    WHERE article_id=?', [id]);
@@ -462,7 +465,9 @@ exports.updateEvent = (req, res) => {
 };
 
 exports.deleteEvent = async (req, res) => {
-  const ev = await q1('SELECT cover_image FROM events WHERE id=?', [req.params.id]);
+  const ev = await q1('SELECT cover_image, slug, campus FROM events WHERE id=?', [req.params.id]);
+  // Notify GHS to deactivate before removing locally
+  if (ev?.slug) notifyGreenwood('event', 'delete', ev.campus || 'all', { gtimes_id: ev.slug });
   await query('DELETE FROM events WHERE id=?', [req.params.id]);
   if (ev?.cover_image) {
     const fp = path.join(UPLOADS_BASE, 'events', ev.cover_image);
