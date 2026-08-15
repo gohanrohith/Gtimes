@@ -78,6 +78,14 @@ if (lb) {
   });
 }
 
+// Disable right-click "Save Image As" on all images
+document.addEventListener('contextmenu', function(e) {
+  if (e.target.tagName === 'IMG') {
+    e.preventDefault();
+    return false;
+  }
+});
+
 // Video player — replace thumbnail with embedded iframe on play
 document.querySelectorAll('.gt-video-card').forEach(card => {
   const btn    = card.querySelector('.gt-play-btn');

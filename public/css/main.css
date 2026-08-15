@@ -613,3 +613,10 @@ img { max-width: 100%; display: block; }
   color: #fff;
 }
 .gt-footer .gt-form-group input[type="email"]::placeholder { color: rgba(255,255,255,.4); }
+
+/* ── Image protection ───────────────────────────────────── */
+img {
+  -webkit-touch-callout: none; /* disable iOS long-press "Save Image" */
+  -webkit-user-drag: none;     /* disable drag-to-desktop in Chrome/Safari */
+  user-select: none;
+}
