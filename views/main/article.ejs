@@ -9,14 +9,17 @@
   <link rel="canonical" href="<%= canonicalUrl %>">
 
   <!-- Open Graph -->
+  <% const ogImage = article.cover_image
+       ? `${domain}/uploads/articles/${article.cover_image}`
+       : `${domain}/images/default-cover.jpg`; %>
   <meta property="og:type"        content="article">
   <meta property="og:title"       content="<%= article.title %>">
   <meta property="og:description" content="<%= (article.excerpt||'').substring(0,200) %>">
   <meta property="og:url"         content="<%= canonicalUrl %>">
   <meta property="og:site_name"   content="<%= settings?.site_name || 'GTimes' %>">
-  <% if (article.cover_image) { %>
-  <meta property="og:image"       content="<%= domain %>/uploads/articles/<%= article.cover_image %>">
-  <% } %>
+  <meta property="og:image"       content="<%= ogImage %>">
+  <meta property="og:image:width"  content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="article:published_time" content="<%= new Date(article.published_at || article.created_at).toISOString() %>">
   <% if (article.cat_name) { %><meta property="article:section" content="<%= article.cat_name %>"><% } %>
 
@@ -24,9 +27,7 @@
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:title"       content="<%= article.title %>">
   <meta name="twitter:description" content="<%= (article.excerpt||'').substring(0,200) %>">
-  <% if (article.cover_image) { %>
-  <meta name="twitter:image"       content="<%= domain %>/uploads/articles/<%= article.cover_image %>">
-  <% } %>
+  <meta name="twitter:image"       content="<%= ogImage %>">
 
   <!-- JSON-LD -->
   <script type="application/ld+json">
@@ -42,8 +43,8 @@
       "@type": "Organization",
       "name": "<%= settings?.site_name || 'GTimes' %>",
       "url": "<%= domain %>"
-    }<% if (article.cover_image) { %>,
-    "image": "<%= domain %>/uploads/articles/<%= article.cover_image %>"<% } %>
+    },
+    "image": "<%= ogImage %>"
   }
   </script>
 
