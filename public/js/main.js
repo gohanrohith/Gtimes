@@ -32,14 +32,21 @@ const lbPrev = document.getElementById('lbPrev');
 const lbNext = document.getElementById('lbNext');
 
 if (lb) {
-  const photos = Array.from(document.querySelectorAll('.gt-photo-item'));
+  let lbData  = [];  // active set: [{src, caption}]
   let current = 0;
+  const lbCounter = document.getElementById('lbCounter');
 
-  function openLb(idx) {
-    current = idx;
-    const item = photos[idx];
-    lbImg.src = item.dataset.src || item.querySelector('img')?.src || '';
-    lbCap.textContent = item.dataset.caption || '';
+  function showPhoto() {
+    const p = lbData[current];
+    lbImg.src = p.src;
+    lbCap.textContent = p.caption || '';
+    if (lbCounter) lbCounter.textContent = lbData.length > 1 ? (current + 1) + ' / ' + lbData.length : '';
+  }
+
+  function openLbWith(data, idx) {
+    lbData  = data;
+    current = ((idx % data.length) + data.length) % data.length;
+    showPhoto();
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -49,11 +56,39 @@ if (lb) {
     document.body.style.overflow = '';
   }
 
-  photos.forEach((item, idx) => item.addEventListener('click', () => openLb(idx)));
+  // Album page: .gt-photo-item elements
+  const photoItems = Array.from(document.querySelectorAll('.gt-photo-item'));
+  if (photoItems.length) {
+    const data = photoItems.map(el => ({
+      src:     el.dataset.src || el.querySelector('img')?.src || '',
+      caption: el.dataset.caption || ''
+    }));
+    photoItems.forEach((el, i) => el.addEventListener('click', () => openLbWith(data, i)));
+  }
+
+  // Inline bento galleries in articles
+  document.querySelectorAll('.gt-bento-gallery').forEach(function(gallery) {
+    var data = [];
+    try { data = JSON.parse(gallery.dataset.photos || '[]'); } catch(e) {}
+    gallery.querySelectorAll('[data-lb-index]').forEach(function(tile) {
+      tile.addEventListener('click', function() {
+        openLbWith(data, parseInt(tile.dataset.lbIndex, 10));
+      });
+    });
+  });
+
   lbClose.addEventListener('click', closeLb);
   lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
-  lbPrev.addEventListener('click', e => { e.stopPropagation(); openLb((current - 1 + photos.length) % photos.length); });
-  lbNext.addEventListener('click', e => { e.stopPropagation(); openLb((current + 1) % photos.length); });
+  lbPrev.addEventListener('click', e => {
+    e.stopPropagation();
+    current = (current - 1 + lbData.length) % lbData.length;
+    showPhoto();
+  });
+  lbNext.addEventListener('click', e => {
+    e.stopPropagation();
+    current = (current + 1) % lbData.length;
+    showPhoto();
+  });
   document.addEventListener('keydown', e => {
     if (!lb.classList.contains('open')) return;
     if (e.key === 'Escape') closeLb();

@@ -134,10 +134,40 @@ async function processInlineGalleries(content) {
   return content.replace(regex, (match, id) => {
     const g = galleries[parseInt(id)];
     if (!g) return '';
-    const photosHtml = g.photos.map(p =>
-      `<div class="gt-photo-item" data-src="/uploads/gallery/${p.filename}" data-caption="${(p.caption||'').replace(/"/g,'&quot;')}"><img src="/uploads/gallery/${p.filename}" alt="${(p.caption||'').replace(/"/g,'&quot;')}" loading="lazy" onerror="this.closest('.gt-photo-item').style.display='none'"></div>`
-    ).join('');
-    return `<div class="gt-article-gallery"><div class="gt-article-gallery-header"><i class="fas fa-images"></i> ${g.album.title} <span style="font-weight:400;color:var(--gt-gray);margin-left:.4rem">${g.photos.length} photos</span></div><div class="gt-article-gallery-grid">${photosHtml}</div></div>`;
+
+    const photos   = g.photos;
+    const n        = photos.length;
+    const SHOW_SQ  = 4;                           // max squares beside the big image
+    const squareCnt = Math.min(SHOW_SQ, n - 1);  // actual squares to render
+    const hiddenCnt = n - 1 - squareCnt;         // photos hidden behind "+N"
+
+    // All photos as JSON for the lightbox
+    const photosJson = JSON.stringify(
+      photos.map(p => ({ src: `/uploads/gallery/${p.filename}`, caption: p.caption || '' }))
+    ).replace(/"/g, '&quot;');
+
+    // Big image (always photos[0])
+    const p0 = photos[0];
+    let tiles = `<div class="gt-bento-big" data-lb-index="0">` +
+      `<img src="/uploads/gallery/${p0.filename}" alt="${(p0.caption||'').replace(/"/g,'&quot;')}" loading="lazy" onerror="this.closest('.gt-bento-big').style.display='none'">` +
+      `</div>`;
+
+    // Squares (photos[1..squareCnt]) with fixed CSS-class placement
+    for (let i = 1; i <= squareCnt; i++) {
+      const p      = photos[i];
+      const isLast = i === squareCnt && hiddenCnt > 0;
+      tiles += `<div class="gt-bento-sq gt-bento-sq-${i}" data-lb-index="${i}">` +
+        `<img src="/uploads/gallery/${p.filename}" alt="${(p.caption||'').replace(/"/g,'&quot;')}" loading="lazy" onerror="this.closest('.gt-bento-sq').style.display='none'">` +
+        (isLast ? `<div class="gt-bento-more">+${hiddenCnt}</div>` : '') +
+        `</div>`;
+    }
+
+    return `<div class="gt-article-gallery">` +
+      `<div class="gt-article-gallery-header"><i class="fas fa-images"></i> ${g.album.title} ` +
+      `<span style="font-weight:400;color:var(--gt-gray);margin-left:.4rem">${n} photo${n !== 1 ? 's' : ''}</span></div>` +
+      `<div class="gt-bento-gallery" data-photos="${photosJson}">` +
+      `<div class="gt-bento-grid" data-sq="${squareCnt}">${tiles}</div>` +
+      `</div></div>`;
   });
 }
 
