@@ -549,12 +549,33 @@ exports.deleteAlbum = async (req, res) => {
 
 exports.deletePhoto = async (req, res) => {
   const photo = await q1('SELECT * FROM gallery_photos WHERE id=?', [req.params.id]);
+  const albumId = photo?.album_id;
   if (photo) {
     const fp = path.join(UPLOADS_BASE, 'gallery', photo.filename);
     if (fs.existsSync(fp)) fs.unlinkSync(fp);
     await q('DELETE FROM gallery_photos WHERE id=?', [photo.id]);
   }
-  res.redirect('back');
+  res.redirect(albumId ? `/admin/gallery/${albumId}/upload` : '/admin/gallery');
+};
+
+exports.movePhoto = async (req, res) => {
+  const { direction } = req.body;
+  const photo = await q1('SELECT * FROM gallery_photos WHERE id=?', [req.params.id]);
+  if (!photo) return res.redirect('/admin/gallery');
+  const albumId = photo.album_id;
+  const photos = await q('SELECT id, sort_order FROM gallery_photos WHERE album_id=? ORDER BY sort_order ASC, id ASC', [albumId]);
+  // Normalize sort_orders to sequential integers so swaps are always clean
+  for (let i = 0; i < photos.length; i++) {
+    await q('UPDATE gallery_photos SET sort_order=? WHERE id=?', [i, photos[i].id]);
+    photos[i].sort_order = i;
+  }
+  const idx = photos.findIndex(p => p.id === photo.id);
+  const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapIdx >= 0 && swapIdx < photos.length) {
+    await q('UPDATE gallery_photos SET sort_order=? WHERE id=?', [swapIdx, photo.id]);
+    await q('UPDATE gallery_photos SET sort_order=? WHERE id=?', [idx, photos[swapIdx].id]);
+  }
+  res.redirect(`/admin/gallery/${albumId}/upload`);
 };
 
 // ── Videos ────────────────────────────────────────────
@@ -729,14 +750,15 @@ exports.sendNewsletter = async (req, res) => {
 // ── Gallery extras ──────────────────────────────────────
 exports.updatePhotoCaption = async (req, res) => {
   const { caption } = req.body;
+  const photo = await q1('SELECT album_id FROM gallery_photos WHERE id=?', [req.params.id]);
   await q('UPDATE gallery_photos SET caption=? WHERE id=?', [caption?.trim() || null, req.params.id]);
-  res.redirect('back');
+  res.redirect(photo ? `/admin/gallery/${photo.album_id}/upload` : '/admin/gallery');
 };
 
 exports.setAlbumCover = async (req, res) => {
   const photo = await q1('SELECT filename, album_id FROM gallery_photos WHERE id=? AND album_id=?', [req.params.photoId, req.params.id]);
   if (photo) await q('UPDATE gallery_albums SET cover_image=? WHERE id=?', [photo.filename, req.params.id]);
-  res.redirect('back');
+  res.redirect(`/admin/gallery/${req.params.id}/upload`);
 };
 
 // ── Article preview (draft preview for admin) ──────────

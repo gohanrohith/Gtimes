@@ -116,13 +116,28 @@ exports.articles = async (req, res) => {
   });
 };
 
-// Copy gallery embed tags from English content into a translation
-// if the translation doesn't already have them (galleries are language-neutral)
-function injectMissingGalleries(rawEn, transContent) {
-  if (!transContent || !rawEn) return transContent;
-  if (/class="gt-inline-gallery"/.test(transContent)) return transContent; // already has galleries
-  const embeds = rawEn.match(/<(?:div|figure)\s[^>]*class="gt-inline-gallery"[^>]*>[\s\S]*?<\/(?:div|figure)>/gi) || [];
-  return embeds.length ? transContent + embeds.join('') : transContent;
+// Collect unique gallery embeds across all language versions (any language can be the source)
+function collectAllEmbeds(...rawContents) {
+  const all = rawContents.filter(Boolean).join('');
+  const seen = new Set();
+  return (all.match(/<(?:div|figure)\s[^>]*class="gt-inline-gallery"[^>]*>[\s\S]*?<\/(?:div|figure)>/gi) || [])
+    .filter(embed => {
+      const m = embed.match(/data-album="(\d+)"/);
+      if (!m || seen.has(m[1])) return false;
+      seen.add(m[1]);
+      return true;
+    });
+}
+
+// Inject any albums missing from content (so galleries are consistent across all language tabs)
+function syncGalleries(content, allEmbeds) {
+  if (!content || !allEmbeds.length) return content;
+  let result = content;
+  for (const embed of allEmbeds) {
+    const m = embed.match(/data-album="(\d+)"/);
+    if (m && !new RegExp(`data-album="${m[1]}"`).test(result)) result += embed;
+  }
+  return result;
 }
 
 // ── Inline gallery processor ─────────────────────────────
@@ -205,10 +220,13 @@ exports.article = async (req, res) => {
 
   const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : `http://localhost:${process.env.PORT || 3001}`;
 
-  const rawContent   = article.content; // save raw before processing so we can inject into translations
-  article.content    = await processInlineGalleries(article.content);
-  article.content_hi = await processInlineGalleries(injectMissingGalleries(rawContent, article.content_hi));
-  article.content_te = await processInlineGalleries(injectMissingGalleries(rawContent, article.content_te));
+  const rawContent   = article.content;
+  const rawContentHi = article.content_hi;
+  const rawContentTe = article.content_te;
+  const allEmbeds = collectAllEmbeds(rawContent, rawContentHi, rawContentTe);
+  article.content    = await processInlineGalleries(syncGalleries(rawContent,   allEmbeds));
+  article.content_hi = await processInlineGalleries(syncGalleries(rawContentHi, allEmbeds));
+  article.content_te = await processInlineGalleries(syncGalleries(rawContentTe, allEmbeds));
 
   res.render('main/article', {
     title: `${article.title} | ${settings.site_name || 'GTimes'}`,
@@ -252,10 +270,13 @@ exports.shortArticle = async (req, res) => {
 
   const domain = process.env.NODE_ENV === 'production' ? 'https://gtimes.in' : `http://localhost:${process.env.PORT || 3001}`;
 
-  const rawContentS  = article.content;
-  article.content    = await processInlineGalleries(article.content);
-  article.content_hi = await processInlineGalleries(injectMissingGalleries(rawContentS, article.content_hi));
-  article.content_te = await processInlineGalleries(injectMissingGalleries(rawContentS, article.content_te));
+  const rawContentS   = article.content;
+  const rawContentSHi = article.content_hi;
+  const rawContentSTe = article.content_te;
+  const allEmbedsS = collectAllEmbeds(rawContentS, rawContentSHi, rawContentSTe);
+  article.content    = await processInlineGalleries(syncGalleries(rawContentS,   allEmbedsS));
+  article.content_hi = await processInlineGalleries(syncGalleries(rawContentSHi, allEmbedsS));
+  article.content_te = await processInlineGalleries(syncGalleries(rawContentSTe, allEmbedsS));
 
   const shortUrl = `${domain}/p/${article.short_slug || article.id}`;
 

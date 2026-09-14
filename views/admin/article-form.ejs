@@ -359,19 +359,6 @@ function updateWordCount() {
   }
 }
 quillEn.on('text-change', function() {
-  const text  = quillEn.getText();
-  const count = countWords(text);
-  if (count >= WORD_MAX) {
-    // block further typing — revert to last allowed state
-    const delta = quillEn.getContents();
-    // count again after potential paste
-    const words = text.trim().split(/\s+/);
-    if (words.length > WORD_MAX) {
-      const allowed = words.slice(0, WORD_MAX).join(' ');
-      quillEn.setText(allowed);
-      quillEn.setSelection(quillEn.getLength());
-    }
-  }
   updateWordCount();
 });
 updateWordCount();
