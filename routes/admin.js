@@ -67,6 +67,7 @@ router.post('/gallery/:id/delete',           ctrl.deleteAlbum);
 router.post('/gallery/:id/cover/:photoId',   ctrl.setAlbumCover);
 router.post('/gallery/photo/:id/caption',    ctrl.updatePhotoCaption);
 router.post('/gallery/photo/:id/delete',     ctrl.deletePhoto);
+router.post('/gallery/:id/reorder',          ctrl.reorderPhotos);
 router.post('/gallery/photo/:id/move',       ctrl.movePhoto);
 
 // Videos

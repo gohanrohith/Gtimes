@@ -558,6 +558,14 @@ exports.deletePhoto = async (req, res) => {
   res.redirect(albumId ? `/admin/gallery/${albumId}/upload` : '/admin/gallery');
 };
 
+exports.reorderPhotos = async (req, res) => {
+  const ids = [].concat(req.body.ids || []);
+  for (let i = 0; i < ids.length; i++) {
+    await q('UPDATE gallery_photos SET sort_order=? WHERE id=? AND album_id=?', [i, ids[i], req.params.id]);
+  }
+  res.json({ ok: true });
+};
+
 exports.movePhoto = async (req, res) => {
   const { direction } = req.body;
   const photo = await q1('SELECT * FROM gallery_photos WHERE id=?', [req.params.id]);

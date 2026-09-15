@@ -76,7 +76,7 @@
     <!-- Existing photos -->
     <% if (photos && photos.length > 0) { %>
     <h3 style="font-size:.95rem;font-weight:700;margin-bottom:1rem">Album Photos (<%= photos.length %>)</h3>
-    <div id="photoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem">
+    <div id="photoGrid" data-album="<%= album.id %>" data-csrf="<%= csrfToken %>" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem">
       <% photos.forEach((photo, photoIdx) => { %>
       <div data-photo-card data-photo-id="<%= photo.id %>" style="border-radius:8px;overflow:hidden;background:var(--gt-off);border:2px solid <%= album.cover_image===photo.filename ? 'var(--gt-green)' : 'transparent' %>">
         <div style="position:relative">
@@ -95,12 +95,8 @@
           <input type="text" name="caption" value="<%= photo.caption||'' %>" placeholder="Add caption…" style="flex:1;padding:.3rem .5rem;border:1px solid var(--gt-light);border-radius:4px;font-family:inherit;font-size:.75rem">
           <button type="submit" class="btn btn-xs btn-outline" title="Save caption"><i class="fas fa-check"></i></button>
         </form>
-        <!-- Reorder -->
-        <div class="photo-move-row" style="display:flex;gap:.3rem;padding:0 .5rem .3rem">
-          <button data-move="up" data-photo="<%= photo.id %>" data-csrf="<%= csrfToken %>"
-            class="btn btn-xs btn-outline" style="flex:1;justify-content:center<%= photoIdx===0 ? ';visibility:hidden' : '' %>" title="Move up"><i class="fas fa-arrow-up"></i></button>
-          <button data-move="down" data-photo="<%= photo.id %>" data-csrf="<%= csrfToken %>"
-            class="btn btn-xs btn-outline" style="flex:1;justify-content:center<%= photoIdx===photos.length-1 ? ';visibility:hidden' : '' %>" title="Move down"><i class="fas fa-arrow-down"></i></button>
+        <div style="padding:.3rem .5rem .1rem;text-align:center;cursor:grab;color:var(--gt-gray);font-size:.7rem;letter-spacing:.05em" title="Drag to reorder">
+          <i class="fas fa-grip-horizontal"></i>
         </div>
         <!-- Set as cover -->
         <% if (album.cover_image !== photo.filename) { %>
@@ -117,6 +113,8 @@
 
   </main>
 </div>
+<style>.sortable-ghost{opacity:.35;background:var(--gt-lime,#d4f5b0)!important}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js"></script>
 <script src="/js/admin.js"></script>
 <script>
 document.getElementById('photoInput')?.addEventListener('change', function() {
@@ -134,52 +132,30 @@ document.getElementById('photoInput')?.addEventListener('change', function() {
   });
 });
 
-// AJAX photo reorder — no page flash
+// Drag-and-drop photo reorder via SortableJS
 (function() {
   const photoGrid = document.getElementById('photoGrid');
-  if (!photoGrid) return;
+  if (!photoGrid || typeof Sortable === 'undefined') return;
+  const albumId = photoGrid.dataset.album;
+  const csrf    = photoGrid.dataset.csrf;
 
-  function refreshArrows() {
-    const cards = [...photoGrid.querySelectorAll('[data-photo-card]')];
-    cards.forEach((card, i) => {
-      const up   = card.querySelector('[data-move="up"]');
-      const down = card.querySelector('[data-move="down"]');
-      if (up)   up.style.visibility   = i === 0               ? 'hidden' : '';
-      if (down) down.style.visibility = i === cards.length - 1 ? 'hidden' : '';
-    });
-  }
-
-  photoGrid.addEventListener('click', async function(e) {
-    const btn = e.target.closest('[data-move]');
-    if (!btn) return;
-    e.preventDefault();
-
-    const direction = btn.dataset.move;
-    const photoId   = btn.dataset.photo;
-    const csrf      = btn.dataset.csrf;
-    const card      = btn.closest('[data-photo-card]');
-
-    // Optimistic DOM swap first
-    const sibling = direction === 'up' ? card.previousElementSibling : card.nextElementSibling;
-    if (!sibling) return;
-    if (direction === 'up') {
-      photoGrid.insertBefore(card, sibling);
-    } else {
-      photoGrid.insertBefore(sibling, card);
+  Sortable.create(photoGrid, {
+    animation: 150,
+    handle: '.fa-grip-horizontal',
+    ghostClass: 'sortable-ghost',
+    onEnd: async function() {
+      const ids = [...photoGrid.querySelectorAll('[data-photo-card]')].map(c => c.dataset.photoId);
+      const fd = new FormData();
+      fd.append('_csrf', csrf);
+      ids.forEach(id => fd.append('ids[]', id));
+      try {
+        await fetch('/admin/gallery/' + albumId + '/reorder', {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          body: fd
+        });
+      } catch (_) { /* non-critical */ }
     }
-    refreshArrows();
-
-    // Persist to server silently
-    const fd = new FormData();
-    fd.append('_csrf', csrf);
-    fd.append('direction', direction);
-    try {
-      await fetch('/admin/gallery/photo/' + photoId + '/move', {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: fd
-      });
-    } catch (_) { /* non-critical */ }
   });
 })();
 </script>
