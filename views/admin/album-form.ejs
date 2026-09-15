@@ -145,14 +145,14 @@ document.getElementById('photoInput')?.addEventListener('change', function() {
     ghostClass: 'sortable-ghost',
     onEnd: async function() {
       const ids = [...photoGrid.querySelectorAll('[data-photo-card]')].map(c => c.dataset.photoId);
-      const fd = new FormData();
-      fd.append('_csrf', csrf);
-      ids.forEach(id => fd.append('ids[]', id));
+      const params = new URLSearchParams();
+      params.append('_csrf', csrf);
+      ids.forEach(id => params.append('ids[]', id));
       try {
         await fetch('/admin/gallery/' + albumId + '/reorder', {
           method: 'POST',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' },
-          body: fd
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params
         });
       } catch (_) { /* non-critical */ }
     }
