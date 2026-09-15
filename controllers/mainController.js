@@ -151,7 +151,7 @@ async function processInlineGalleries(content) {
   await Promise.all(albumIds.map(async id => {
     const [album, photos] = await Promise.all([
       q1('SELECT * FROM gallery_albums WHERE id=? AND is_active=1', [id]),
-      q('SELECT * FROM gallery_photos WHERE album_id=? ORDER BY sort_order ASC, id ASC LIMIT 20', [id]),
+      q('SELECT * FROM gallery_photos WHERE album_id=? ORDER BY sort_order ASC, id ASC', [id]),
     ]);
     if (album && photos.length) galleries[id] = { album, photos };
   }));
@@ -443,7 +443,7 @@ exports.album = async (req, res) => {
   const album = await q1('SELECT * FROM gallery_albums WHERE slug=? AND is_active=1', [req.params.slug]);
   if (!album) return res.status(404).render('404', { title: '404 | GTimes' });
 
-  const photos = await q('SELECT * FROM gallery_photos WHERE album_id=? ORDER BY sort_order ASC, created_at ASC', [album.id]);
+  const photos = await q('SELECT * FROM gallery_photos WHERE album_id=? ORDER BY sort_order ASC, id ASC', [album.id]);
   res.render('main/album', {
     title: `${album.title} | Gallery | ${settings.site_name || 'GTimes'}`,
     settings, categories, album, photos,
