@@ -575,6 +575,7 @@ exports.movePhoto = async (req, res) => {
     await q('UPDATE gallery_photos SET sort_order=? WHERE id=?', [swapIdx, photo.id]);
     await q('UPDATE gallery_photos SET sort_order=? WHERE id=?', [idx, photos[swapIdx].id]);
   }
+  if (req.headers['x-requested-with'] === 'XMLHttpRequest') return res.json({ ok: true });
   res.redirect(`/admin/gallery/${albumId}/upload`);
 };
 
