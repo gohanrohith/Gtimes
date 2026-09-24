@@ -16,6 +16,12 @@
   <main class="gt-admin-main">
     <div class="gt-admin-page-header">
       <h1>Photo Gallery</h1>
+      <form method="POST" action="/admin/gallery/sync-all" style="display:inline" id="syncAllForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="button" class="btn btn-outline" onclick="if(confirm('Sync all albums to GHS now?'))document.getElementById('syncAllForm').submit()">
+          <i class="fas fa-rotate"></i> Sync All to GHS
+        </button>
+      </form>
       <a href="/admin/gallery/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Album</a>
     </div>
 

@@ -504,6 +504,23 @@ exports.albumUploadForm = async (req, res) => {
   res.render('admin/album-form', { title: `Upload Photos | ${album.title} | GTimes Admin`, album, photos });
 };
 
+exports.syncAllGalleries = async (req, res) => {
+  const albums = await q('SELECT * FROM gallery_albums ORDER BY id ASC');
+  const domain = process.env.GTIMES_DOMAIN || 'https://gtimes.in';
+  let synced = 0;
+  for (const album of albums) {
+    notifyGreenwood('gallery', 'create', album.campus || 'all', {
+      gtimes_id:       album.id,
+      title:           album.title,
+      slug:            album.slug,
+      cover_image_url: album.cover_image ? `${domain}/uploads/gallery/${album.cover_image}` : null,
+      gtimes_url:      `${domain}/gallery/${album.slug}`,
+    });
+    synced++;
+  }
+  res.redirect(`/admin/gallery?success=${synced}+album${synced !== 1 ? 's' : ''}+synced+to+GHS`);
+};
+
 exports.createAlbum = async (req, res) => {
   const { title, description, campus } = req.body;
   if (!title) return res.redirect('/admin/gallery/new?error=Title+required');

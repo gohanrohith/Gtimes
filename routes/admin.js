@@ -59,6 +59,7 @@ router.post('/events/:id/delete', ctrl.deleteEvent);
 
 // Gallery
 router.get('/gallery',                       ctrl.galleryList);
+router.post('/gallery/sync-all',             ctrl.syncAllGalleries);
 router.get('/gallery/new',                   ctrl.albumForm);
 router.post('/gallery/new',                  ctrl.createAlbum);
 router.get('/gallery/:id/upload',            ctrl.albumUploadForm);
