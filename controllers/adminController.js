@@ -510,6 +510,17 @@ exports.createAlbum = async (req, res) => {
   const slug = await makeSlug(title, 'gallery_albums');
   await q(`INSERT INTO gallery_albums (title, slug, description, campus, created_by) VALUES (?,?,?,?,?)`,
     [title, slug, description || null, campus || 'all', req.session.adminId]);
+  const album = await q1('SELECT * FROM gallery_albums WHERE slug=?', [slug]);
+  if (album) {
+    const domain = process.env.GTIMES_DOMAIN || 'https://gtimes.in';
+    notifyGreenwood('gallery', 'create', campus || 'all', {
+      gtimes_id: album.id,
+      title:     album.title,
+      slug:      album.slug,
+      cover_image_url: album.cover_image ? `${domain}/uploads/gallery/${album.cover_image}` : null,
+      gtimes_url: `${domain}/gallery/${album.slug}`,
+    });
+  }
   res.redirect('/admin/gallery');
 };
 
@@ -526,10 +537,24 @@ exports.uploadPhotos = (req, res) => {
       uploaded++;
     }
     // Set first photo as cover if album has none
-    const album = await q1('SELECT * FROM gallery_albums WHERE id=?', [albumId]);
+    let album = await q1('SELECT * FROM gallery_albums WHERE id=?', [albumId]);
     if (album && !album.cover_image && uploaded > 0) {
       const first = await q1('SELECT filename FROM gallery_photos WHERE album_id=? ORDER BY created_at ASC LIMIT 1', [albumId]);
-      if (first) await q('UPDATE gallery_albums SET cover_image=? WHERE id=?', [first.filename, albumId]);
+      if (first) {
+        await q('UPDATE gallery_albums SET cover_image=? WHERE id=?', [first.filename, albumId]);
+        album = await q1('SELECT * FROM gallery_albums WHERE id=?', [albumId]);
+      }
+    }
+    // Re-notify GHS with updated cover
+    if (album && uploaded > 0) {
+      const domain = process.env.GTIMES_DOMAIN || 'https://gtimes.in';
+      notifyGreenwood('gallery', 'create', album.campus || 'all', {
+        gtimes_id: album.id,
+        title:     album.title,
+        slug:      album.slug,
+        cover_image_url: album.cover_image ? `${domain}/uploads/gallery/${album.cover_image}` : null,
+        gtimes_url: `${domain}/gallery/${album.slug}`,
+      });
     }
     res.redirect('/admin/gallery');
   });
@@ -537,6 +562,7 @@ exports.uploadPhotos = (req, res) => {
 
 exports.deleteAlbum = async (req, res) => {
   const id = req.params.id;
+  const album = await q1('SELECT * FROM gallery_albums WHERE id=?', [id]);
   const photos = await q('SELECT filename FROM gallery_photos WHERE album_id=?', [id]);
   photos.forEach(p => {
     const fp = path.join(UPLOADS_BASE, 'gallery', p.filename);
@@ -544,6 +570,9 @@ exports.deleteAlbum = async (req, res) => {
   });
   await q('DELETE FROM gallery_photos WHERE album_id=?', [id]);
   await query('DELETE FROM gallery_albums WHERE id=?', [id]);
+  if (album) {
+    notifyGreenwood('gallery', 'delete', album.campus || 'all', { gtimes_id: album.id });
+  }
   res.redirect('/admin/gallery');
 };
 
