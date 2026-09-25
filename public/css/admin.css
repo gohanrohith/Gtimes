@@ -39,13 +39,15 @@ ul   { list-style: none; }
 .gt-brand-g     { color: var(--gt-red); }
 .gt-brand-times { color: var(--gt-white); }
 
-.gt-admin-nav { padding: 1rem 0; flex: 1; overflow-y: auto; }
+.gt-admin-nav { padding: .75rem 0; flex: 1; overflow: hidden; }
 .gt-admin-link {
   display: flex; align-items: center; gap: .75rem;
   padding: .65rem 1.5rem; color: #aaa; font-size: .88rem; font-weight: 500;
   transition: background .15s, color .15s;
+  border-left: 3px solid transparent;
 }
-.gt-admin-link:hover, .gt-admin-link.active { background: rgba(255,255,255,.06); color: var(--gt-white); }
+.gt-admin-link:hover { background: rgba(255,255,255,.06); color: var(--gt-white); }
+.gt-admin-link.active { background: rgba(255,255,255,.06); color: var(--gt-white); border-left-color: var(--gt-lime); }
 .gt-admin-link i { width: 16px; text-align: center; font-size: .85rem; }
 .gt-admin-divider { height: 1px; background: rgba(255,255,255,.06); margin: .75rem 1.5rem; }
 .gt-admin-logout { color: #e57373 !important; }
