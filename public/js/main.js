@@ -121,6 +121,45 @@ document.addEventListener('contextmenu', function(e) {
   }
 });
 
+// Sticky nav compact
+(function() {
+  var nav = document.querySelector('.gt-nav');
+  if (!nav) return;
+  function update() { nav.classList.toggle('scrolled', window.scrollY > 10); }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+
+// Mobile nav: lock body scroll when open
+(function() {
+  var navMenu = document.getElementById('navMenu');
+  if (!navMenu) return;
+  new MutationObserver(function() {
+    document.body.classList.toggle('nav-open', navMenu.classList.contains('open'));
+  }).observe(navMenu, { attributes: true, attributeFilter: ['class'] });
+})();
+
+// Scroll-reveal + staggered grid children
+(function() {
+  document.querySelectorAll('.gt-articles-grid, .gt-albums-grid, .gt-videos-grid').forEach(function(grid) {
+    Array.from(grid.children).forEach(function(child, i) {
+      if (!child.hasAttribute('data-reveal')) {
+        child.setAttribute('data-reveal', '');
+        child.style.setProperty('--delay', (i * 80) + 'ms');
+      }
+    });
+  });
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+  document.querySelectorAll('[data-reveal]').forEach(function(el) { obs.observe(el); });
+})();
+
 // Video player — replace thumbnail with embedded iframe on play
 document.querySelectorAll('.gt-video-card').forEach(card => {
   const btn    = card.querySelector('.gt-play-btn');
