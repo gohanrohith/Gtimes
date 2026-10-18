@@ -117,7 +117,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js"></script>
 <script src="/js/admin.js"></script>
 <script>
+document.getElementById('uploadForm')?.addEventListener('submit', function(e) {
+  const input = document.getElementById('photoInput');
+  if (!input || input.files.length === 0) {
+    e.preventDefault();
+    let msg = document.getElementById('uploadValidationMsg');
+    if (!msg) {
+      msg = document.createElement('p');
+      msg.id = 'uploadValidationMsg';
+      msg.style.cssText = 'color:var(--gt-red,#e53e3e);font-size:.85rem;margin:.5rem 0 0;font-weight:500';
+      input.closest('.gt-form-group').appendChild(msg);
+    }
+    msg.textContent = 'Please choose at least one photo to upload.';
+    input.closest('.gt-form-group').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+
 document.getElementById('photoInput')?.addEventListener('change', function() {
+  const msg = document.getElementById('uploadValidationMsg');
+  if (msg) msg.remove();
   const grid = document.getElementById('previewGrid');
   grid.innerHTML = '';
   Array.from(this.files).forEach(file => {
